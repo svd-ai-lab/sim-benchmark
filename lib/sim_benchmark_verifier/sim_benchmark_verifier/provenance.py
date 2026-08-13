@@ -365,10 +365,8 @@ def _verify_ltspice_log(value, source: dict) -> VerifyResult:
 def _fetch_sim_run_stdout(run_id: str) -> str:
     """Pull a sim run's stdout via `sim --json logs <id> --field stdout`.
 
-    Necessary because newer sim-cli no longer inlines stdout into
-    history.jsonl — it persists to <sim_home>/runs/<id>.stdout and lets
-    the CLI read on demand. Verifier asks via the public CLI rather
-    than poking at the file path (decouples us from sim-cli storage).
+    Retained for archived task contracts whose run-history records reference a
+    separate stdout artifact. Current public tasks do not use this path.
     """
     try:
         proc = subprocess.run(

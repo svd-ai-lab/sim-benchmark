@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/nmc-pouch-cccv-charge-1p3c-from-soc0p23"
 description = "constant-current / constant-voltage charge of the Mohtat2020 cell, scored from an evaluator-reproduced cccv simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "cccv"]
 
 [environment]

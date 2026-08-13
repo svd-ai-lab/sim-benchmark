@@ -3,7 +3,7 @@
   "case_id": "lid_driven_cavity_ghia_re1000",
   "oracle_status": "cfd_opensource_fullstack_openfoam_v1_hand",
   "oracle_provenance": {
-    "host": "rserver (sim-benchmark-cfd-fullstack:latest, OpenFOAM ESI v2412)",
+    "environment": "sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
     "openfoam_version": "ESI OpenFOAM v2412",
     "calibration_date": "auto",
     "extract_method": "simpleFoam laminar steady solve of a 2D lid-driven SQUARE cavity (unit side L=1, lid Ux=1, nu=0.001 -> Re=1000); U sampled on the vertical centerline x=0.5 via sampleDict; u_min_vertical_centerline = min(Ux)/U_lid over the centerline (solution/solve_inner.py).",

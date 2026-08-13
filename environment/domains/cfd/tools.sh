@@ -57,5 +57,4 @@ python3 -c "import meshio, pyvista; print('meshio', meshio.__version__)" || true
 # ~1.5 GB. apt:
 #   apt-get update && apt-get install -y --no-install-recommends paraview python3-paraview
 #
-# CalculiX / Elmer — if a case needs conjugate FEM coupling, prefer the
-# dedicated fem image instead of bloating this one.
+# Add optional CFD utilities only when a public task requires them.

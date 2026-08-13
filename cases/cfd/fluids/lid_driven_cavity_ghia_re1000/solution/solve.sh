@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 # Oracle entry point for lid_driven_cavity_ghia_re1000.
 #
-# This script proves the case is solvable with the toolchain in
-# sim-benchmark-cfd-fullstack. It drives OpenFOAM through sim-cli
-# so the run_record.json produced here is structurally identical to what an
-# agent would emit — the grader's authenticity check works unmodified.
+# This script proves the case is solvable with the OpenFOAM toolchain in the
+# CFD domain image.
 #
 # solve_inner.py shells out to blockMesh + simpleFoam (laminar) + postProcess,
-# samples the vertical-centerline (x=0.5) velocity, and writes
-# /tmp/agent/result.json with file_extract provenance.
+# samples the vertical-centerline (x=0.5) velocity, and writes the submission
+# artifacts.
 set -euo pipefail
 
 HERE="$(dirname "$(realpath "$0")")"

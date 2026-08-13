@@ -3,7 +3,7 @@
   "case_id": "flatplate_zpg_subsonic",
   "historical_revalidation_2026_06_07": {
     "status": "superseded by native-openfoam-v2.1; retained for provenance only",
-    "host": "rserver — sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
+    "environment": "sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
     "oracle_score": 0.9973,
     "anti_cheat": "openfoam artifact detector active (polyMesh + time dir), solver_evidence=True",
     "note": "This score used the old source-provenance verifier and pre-v2 KPI grouping; do not compare it with native v2.1 scores."

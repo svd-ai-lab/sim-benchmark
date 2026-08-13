@@ -3,8 +3,8 @@ artifacts = ["/tmp/agent/submission"]
 
 [task]
 name        = "hwe-bench/de-vahl-davis-natural-convection-ra1e4"
-description = "Buoyancy-driven natural convection in a 2D differentially-heated square cavity at Ra=1e4, Pr=0.71 (de Vahl Davis 1983, Int. J. Numer. Meth. Fluids 3:249, Table V; Boussinesq, hot left wall / cold right wall / adiabatic top-bottom). KPI: the average Nusselt number on the hot wall, scored against the published de Vahl Davis benchmark value (gt = the reference number 2.243, NOT the solver's own output)."
-authors     = [{name = "sim-benchmark"}]
+description = "Buoyancy-driven natural convection in a 2D differentially heated square cavity at Ra=1e4 and Pr=0.71. The KPI is the average Nusselt number on the hot wall."
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "laminar", "natural-convection", "buoyancy", "boussinesq", "cavity", "de-vahl-davis", "nusselt", "benchmark", "2d", "openfoam", "vv"]
 
 [environment]
@@ -51,7 +51,6 @@ runtime_status    = "oracle_calibrated_local_v2_reproduction"
 score_template    = "numerical"
 leakage_risk      = 2
 capability_target = "physics"
-source_citation   = "de Vahl Davis, G., 'Natural convection of air in a square cavity: A bench mark numerical solution,' International Journal for Numerical Methods in Fluids, Vol. 3, No. 3, 1983, pp. 249-264. DOI:10.1002/fld.1650030305. Table V (extrapolated benchmark): the average Nusselt number through the cavity / on the hot wall at Ra=1e4, Pr=0.71 is 2.243 (Ra=1e3 -> 1.118, Ra=1e5 -> 4.519, Ra=1e6 -> 8.800)."
+source_citation   = "de Vahl Davis, G., 'Natural convection of air in a square cavity: A bench mark numerical solution,' International Journal for Numerical Methods in Fluids, Vol. 3, No. 3, 1983, pp. 249-264. DOI:10.1002/fld.1650030305, Table V."
 source_url        = "https://doi.org/10.1002/fld.1650030305"
-demand_record     = "docs/demand_sources/records/paper/cfd/demand-cfd-de-vahl-davis-natural-convection-ra1e4-paper-001.yaml"
 tags              = ["native-openfoam", "field-derived-kpi", "laminar", "natural-convection", "boussinesq", "cavity", "benchmark"]

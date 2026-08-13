@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/cylinder-schafer-turek-2d1-cd"
 description = "Schäfer & Turek (1996) DFG benchmark 2D-1: steady laminar incompressible flow around a circular cylinder in a 2.2 m x 0.41 m channel, cylinder D=0.1 m centred at (0.2, 0.2) (offset from the channel centreline), parabolic inlet, Umean=0.2, nu=1e-3 -> Re=20. Quantity of interest is the cylinder drag coefficient cD. gt is the published committee reference cD=5.57953523384 (FeatFlow DFG benchmark 2D-1), NOT the bundled solver output."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "laminar", "cylinder", "drag-coefficient", "schafer-turek", "dfg-benchmark", "2d", "vv", "openfoam"]
 
 [environment]
@@ -43,7 +43,7 @@ solver            = "openfoam"
 oracle_wall_sec   = 59
 source_type       = "paper"
 source_channel    = "paper"
-source_citation   = "Schäfer, M. and Turek, S. (with Durst, F., Krause, E., Rannacher, R.), 'Benchmark Computations of Laminar Flow Around a Cylinder', in Flow Simulation with High-Performance Computers II, Notes on Numerical Fluid Mechanics, Vol. 48, pp. 547-566, Vieweg (1996). DOI:10.1007/978-3-322-89849-4_39. Test case 2D-1 (steady laminar, Re=20): reference drag coefficient cD = 5.57953523384 (FeatFlow DFG benchmark 2D-1 reference table)."
+source_citation   = "Schäfer, M. and Turek, S. (with Durst, F., Krause, E., Rannacher, R.), 'Benchmark Computations of Laminar Flow Around a Cylinder', in Flow Simulation with High-Performance Computers II, Notes on Numerical Fluid Mechanics, Vol. 48, pp. 547-566, Vieweg (1996). DOI:10.1007/978-3-322-89849-4_39, test case 2D-1."
 source_url        = "https://doi.org/10.1007/978-3-322-89849-4_39"
 difficulty_tier   = "M"
 gt_type           = "paper-reported"
@@ -53,5 +53,4 @@ runtime_status    = "oracle_calibrated_local_v2_reproduction"
 score_template    = "numerical"
 leakage_risk      = 2
 capability_target = "physics"
-demand_record     = "docs/demand_sources/records/paper/cfd/demand-cfd-cylinder-schafer-turek-2d1-cd-paper-001.yaml"
 tags              = ["native-openfoam", "field-derived-kpi", "drag-coefficient", "wall-bounded", "laminar"]

@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/nh3-flame-speed-repair-mechanism"
 description = "An ammonia flame-speed script runs clean on GRI-Mech 3.0 and returns a burning velocity 45% low; diagnose the mechanism choice and repair it."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "ammonia", "laminar-flame-speed"]
 
 [environment]

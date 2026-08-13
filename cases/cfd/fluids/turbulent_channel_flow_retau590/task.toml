@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/turbulent-channel-flow-retau590"
 description = "Fully-developed turbulent plane-channel flow at friction Reynolds number Re_tau = 590, reproduced from an agent-authored OpenFOAM case and scored from evaluator-generated native fields."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "rans", "turbulent", "channel-flow", "k-omega-sst", "re-tau-590", "dns-reference", "moser-kim-mansour", "vv", "openfoam"]
 
 [environment]
@@ -53,5 +53,4 @@ leakage_risk      = 2
 capability_target = "physics"
 source_citation   = "R. D. Moser, J. Kim and N. N. Mansour, 'Direct numerical simulation of turbulent channel flow up to Re_tau=590,' Physics of Fluids 11(4):943-945 (1999), with the official Oden Institute chan590 mean-profile dataset."
 source_url        = "https://pubs.aip.org/aip/pof/article/11/4/943/253866/Direct-numerical-simulation-of-turbulent-channel"
-demand_record     = "docs/demand_sources/records/workshop-vv/cfd/demand-cfd-turbulent-channel-flow-retau590-vv-001.yaml"
 tags              = ["cfd", "openfoam", "rans", "turbulent", "channel-flow", "k-omega-sst", "dns-reference", "native-reproduction"]

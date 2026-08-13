@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/lid-driven-cavity-ghia-re1000"
 description = "Classic 2D lid-driven square cavity at Re=1000, incompressible laminar steady flow (Ghia, Ghia & Shin 1982, J. Comput. Phys. 48:387, Table I). KPI: the minimum normalised x-velocity on the vertical centerline x=0.5, scored against the published Ghia benchmark value (gt = the reference number, NOT the solver's own output)."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "laminar", "cavity", "lid-driven", "ghia", "benchmark", "2d", "openfoam", "vv"]
 
 [environment]
@@ -51,7 +51,6 @@ runtime_status    = "oracle_calibrated_local_v2_reproduction"
 score_template    = "numerical"
 leakage_risk      = 2
 capability_target = "physics"
-source_citation   = "Ghia, U., Ghia, K. N. and Shin, C. T., 'High-Re Solutions for Incompressible Flow Using the Navier-Stokes Equations and a Multigrid Method,' Journal of Computational Physics, Vol. 48, No. 3, 1982, pp. 387-411. DOI:10.1016/0021-9991(82)90058-4. Table I: u-velocity along the vertical centerline (x=0.5) of the lid-driven square cavity. At Re=1000 the minimum is u = -0.38289 at y = 0.1719."
+source_citation   = "Ghia, U., Ghia, K. N. and Shin, C. T., 'High-Re Solutions for Incompressible Flow Using the Navier-Stokes Equations and a Multigrid Method,' Journal of Computational Physics, Vol. 48, No. 3, 1982, pp. 387-411. DOI:10.1016/0021-9991(82)90058-4, Table I."
 source_url        = "https://doi.org/10.1016/0021-9991(82)90058-4"
-demand_record     = "docs/demand_sources/records/paper/cfd/demand-cfd-lid-driven-cavity-ghia-re1000-paper-001.yaml"
 tags              = ["native-openfoam", "field-derived-kpi", "laminar", "cavity", "benchmark"]

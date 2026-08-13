@@ -1,22 +1,18 @@
-"""KPI-only grader for solver-neutral benchmark cases (schema reward-v3).
+"""Shared KPI scoring helpers and the legacy generic evaluator.
 
-    final_score = kpi_score
+The public HWE-bench tasks use their track-specific clean-rerun evaluators.
+Those evaluators import the tolerance and physics helpers from this module.
 
-The grader was originally two-layered (0.10 meta + 0.90 KPI) where the meta
-layer required at least one successful `sim run` record. That gate has been
-demoted to diagnostic-only (still computed and emitted into reward_detail.json
-under `meta_detail`, but it carries zero weight in `final_score`). The reason:
-the `with-sim-cli vs without-sim-cli` comparison study (configs/v19{a,b})
-needs the without-sim-cli container to be able to score above zero — so
-sim-cli usage cannot be gated. KPI source-verification (file_extract /
-sim_run_stdout / sim_run_kpi) is still enforced per-KPI inside the KPI layer.
+The generic CLI below is retained for archived task contracts and offline
+rescoring. It is not used by the 68 public tasks. Its optional historical run
+metadata has zero weight in ``final_score``; current tasks derive their score
+only from evaluator-owned reproduction and KPI checks.
 
 Layer 1 — meta (DIAGNOSTIC ONLY, weight = 0):
     meta_score = 0.5 · exec_ok + 0.5 · process_ok
     exec_ok    = at least one `kind=run` record in `sim --json logs`
     process_ok = at least one of those has ok=True
-    (Carried in reward_detail.json so we can still tell, post-hoc, whether
-    the agent used sim-cli at all — useful for the comparison study.)
+    (Retained as diagnostic compatibility data for archived task contracts.)
 
 Layer 2 — kpi (group-weighted accuracy, weight = 1.0):
     Each KPI in kpis.json belongs to a `group`; group weights sum to 1.
@@ -57,13 +53,13 @@ from pathlib import Path
 # ──────────────────────────────────────────────────────────────────────
 
 def _query_sim_history() -> list[dict]:
-    """Query sim-cli's run history via the public `sim --json logs` API.
+    """Query optional legacy run history via its historical CLI interface.
 
-    Decoupled from sim-cli's internal storage layout. Raises RuntimeError
-    if sim-cli is unreachable or output is unparseable.
+    Raises ``RuntimeError`` when the legacy interface is unavailable or its
+    output is unparseable. Current public tasks do not call this function.
 
-    Note: older sim-cli versions accepted a `--all` flag; current versions
-    return the full list when `logs` is invoked with no positional target.
+    Older versions accepted a ``--all`` flag; later versions returned the full
+    list when ``logs`` was invoked without a positional target.
     """
     try:
         result = subprocess.run(
@@ -72,7 +68,7 @@ def _query_sim_history() -> list[dict]:
             timeout=10, check=False,
         )
     except FileNotFoundError as e:
-        raise RuntimeError(f"sim CLI not on PATH: {e}") from e
+        raise RuntimeError(f"legacy run-history CLI not on PATH: {e}") from e
     except subprocess.TimeoutExpired as e:
         raise RuntimeError("sim --json logs timed out (>10s)") from e
     if result.returncode != 0:
@@ -101,9 +97,9 @@ def meta_check(_query=None) -> tuple[float, dict]:
             "n_runs": 0, "n_ok_runs": 0,
             "why": str(e),
         }
-    # Older sim-cli tagged each record with `kind: "run"` (vs e.g. "session");
-    # the current schema dropped `kind` since `run` is the only record type
-    # `sim --json logs` returns. Accept either: explicit kind=="run" OR
+    # Older records carried `kind: "run"` (vs e.g. "session"); the later
+    # schema dropped `kind` because `run` was the only record type. Accept
+    # either: explicit kind=="run" OR
     # missing kind (new schema). Same for ok-ness: older used `ok: True`,
     # current uses `exit_code: 0`.
     runs = [r for r in records if r.get("kind", "run") == "run"]
@@ -128,7 +124,7 @@ def meta_check(_query=None) -> tuple[float, dict]:
         "records":    runs,  # carried for KPI provenance lookups
     }
     if not runs:
-        detail["why"] = "no `sim run` records in sim-cli history"
+        detail["why"] = "no legacy run-history records"
     elif not ok_runs:
         detail["why"] = "no run record has ok=True"
     return 0.5 * exec_ok + 0.5 * process_ok, detail
@@ -399,7 +395,7 @@ def main(argv: list[str] | None = None) -> int:
     kpis_spec = spec.get("kpis", {})
     groups_spec = spec.get("kpi_groups", {})
 
-    # Trial-context for the solver-stage detectors (sim-proj#125 phase 3).
+    # Trial context for the solver-stage detector layer.
     # case_dir = where the agent put result.json — typically /tmp/agent
     # in container, or tmp_path in tests. Detectors scan this for
     # solver artifacts (log files, output dirs, etc.).
@@ -520,7 +516,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     # Study task types additionally require evidence of a multi-run study
     # (>= n_evals_min solver evaluations over a parameter space): a design
-    # table or that many sim-cli runs. Stops "run once + guess the optimum".
+    # table or that many legacy run records. Stops "run once + guess the optimum".
     is_study = task_type in ("optimization", "sensitivity") and n_evals_min > 1
     study_evidence = (
         has_study_evidence(ctx, n_evals_min, design_table) if is_study else True

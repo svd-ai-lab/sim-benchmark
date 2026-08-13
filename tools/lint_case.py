@@ -302,7 +302,7 @@ def check_enum(value: object, field: str, path: str, errors: list[str]) -> None:
 
 
 def check_harbor_native_contract(root: Path, errors: list[str]) -> None:
-    """Enforce the invariants of the current sim-cli capability instrument.
+    """Reserved hook for task-level Harbor contract checks.
 
     Stripped invariants (no longer load-bearing):
 
@@ -661,11 +661,8 @@ def check_task_toml(root: Path, errors: list[str]) -> None:
         elif any(not isinstance(item, str) or not item.startswith("/") for item in artifacts):
             errors.append("task.toml: artifact paths must be absolute POSIX paths")
 
-    # NOTE: `internet_access` was previously required false for reproducibility,
-    # but the current ccr+proxy harness needs internet at agent install time
-    # (npm registry, pip aiohttp, the model endpoint over HTTPS). Trial-time isolation is
-    # achieved by airgapping the solver step inside sim-cli, not by closing
-    # the container's network. Lint no longer enforces this field.
+    # The agent container needs network access to its model endpoint. The
+    # separate verifier container is isolated by its Docker Compose policy.
 
     task = data.get("task")
     if isinstance(task, dict):

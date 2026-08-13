@@ -3,7 +3,7 @@
   "case_id": "taylor_green_vortex_2d_re100",
   "oracle_status": "cfd_opensource_fullstack_openfoam_v1_hand",
   "oracle_provenance": {
-    "host": "rserver (sim-benchmark-cfd-fullstack:latest, OpenFOAM ESI v2412)",
+    "environment": "sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
     "openfoam_version": "ESI OpenFOAM v2412",
     "calibration_date": "auto",
     "extract_method": "pisoFoam laminar transient solve of the Taylor-Green (1937) decaying vortex on a doubly-periodic 2*pi x 2*pi box (nu=0.01 -> Re=100), with the exact t=0 Taylor-Green velocity field imposed via setExprFields and all four side patches cyclic; the field is evolved to t-star=5 and u_peak_at_tstar = max over the domain of |Ux| read from the latest-time U field (solution/solve_inner.py).",

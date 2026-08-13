@@ -1,5 +1,5 @@
 # sim-benchmark-cfd-fullstack
-# Industrial CFD full flow. Forward port of the legacy environment/base.
+# CFD environment for the public OpenFOAM tasks.
 # OS root must be the OpenFOAM image (OpenFOAM is not apt-installable).
 # Toolchain in tools.sh; shared harness in environment/_common/install_harness.sh.
 # Build from repo root: environment/domains/build.sh cfd
@@ -41,23 +41,13 @@ COPY lib/sim_benchmark_verifier /opt/sim-benchmark-verifier/
 COPY tools/openai_usage_proxy.py /opt/openai_usage_proxy.py
 COPY tools/ccr-plugins /opt/ccr-plugins/
 COPY environment/_common/install_harness.sh /tmp/install_harness.sh
-ARG SIM_CLI_REF=main
-ARG SIM_SKILLS_REF=main
 ARG NPM_REGISTRY=https://registry.npmmirror.com
 ARG NODE_TARBALL_URL=https://npmmirror.com/mirrors/node/v20.19.0/node-v20.19.0-linux-x64.tar.gz
-RUN APT_MIRROR=${APT_MIRROR} SIM_CLI_REF=${SIM_CLI_REF} SIM_SKILLS_REF=${SIM_SKILLS_REF} \
+RUN APT_MIRROR=${APT_MIRROR} \
     PIP_INDEX_URL=${PIP_INDEX_URL} PIP_TRUSTED_HOST=${PIP_TRUSTED_HOST} \
     NPM_REGISTRY=${NPM_REGISTRY} NODE_TARBALL_URL=${NODE_TARBALL_URL} \
     GH_PROXY=${GH_PROXY} \
     bash /tmp/install_harness.sh
-
-# Install the OpenFOAM sim-cli plugin (this domain's launcher).
-RUN pip install --no-cache-dir --break-system-packages \
-    "sim-plugin-openfoam @ git+${GH_PROXY}https://github.com/svd-ai-lab/sim-plugin-openfoam" \
-    || echo "WARN: sim-plugin-openfoam install failed"
-
-ENV SIM_SKILLS_ROOT=/opt/sim-skills
-ENV SIM_DIR=/logs/agent/sim-cli
 
 USER agent
 WORKDIR /tmp/agent

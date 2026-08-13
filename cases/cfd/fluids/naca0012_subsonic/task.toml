@@ -10,7 +10,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/naca0012-subsonic"
 description = "NACA 0012 airfoil at M=0.15, Re=6e6, fully turbulent: CL/CD at alpha=10 on NASA TMR's official 225x65 grid, vs published CFL3D-SA on the same grid."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "rans", "turbulent", "airfoil", "naca0012", "2d", "vv", "openfoam"]
 
 [environment]
@@ -40,13 +40,6 @@ gpus         = 0
 network_mode = "public"
 
 [metadata.sim]
-# The task_id no longer matches the COMSOL port. That port instantiates the
-# old contract -- free-meshed alpha sweep scored against Ladson's experiment --
-# and this case now asks a different question: one alpha, on NASA's supplied
-# grid, scored against published CFL3D on that same grid. Same KPI names and
-# the same tolerance band are what make two directories one task; neither
-# survives here, so keeping the shared id would have made the pair look
-# portable when it is not.
 task_id         = "naca0012-subsonic-tmr-grid"
 solver          = "openfoam"
 # Measured cost of producing the reference answer: solution/solve.sh plus the

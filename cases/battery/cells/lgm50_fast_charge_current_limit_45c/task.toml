@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/lgm50-fast-charge-current-limit-45c"
 description = "largest constant charge current a CCCV protocol can use on the Chen2020 cell without the volume-averaged cell temperature crossing 318.15 K, scored from an evaluator-reproduced search."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrothermal", "limit-search"]
 
 [environment]
@@ -58,7 +58,6 @@ runtime_status    = "oracle_calibrated_local_tolerance_study"
 score_template    = "numerical"
 leakage_risk      = 1
 capability_target = "solve"
-demand_record     = "docs/demand_sources/records/constructed/battery/demand-battery-fast-charge-current-limit-001.yaml"
 source_citation   = "Chen, Kuhn, Wu et al., J. Electrochem. Soc. 167 (2020) 080534 — LG M50 21700 NMC811/graphite cell, distributed with PyBaMM as the Chen2020 parameter set. The cell is published; the limiting current asked for here is not."
 source_url        = "https://doi.org/10.1149/1945-7111/ab9050"
 tags              = ["battery", "pybamm", "numeric-kpi", "native-reproduction", "ocv-gated", "limit-search"]

@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/a123-lfp-mean-voltage-1p52c-297k"
 description = "rate capability of the Prada2013 cell, scored from an evaluator-reproduced rate_capability simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "rate_capability"]
 
 [environment]

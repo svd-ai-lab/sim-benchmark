@@ -3,7 +3,7 @@
   "case_id": "bump_in_channel_2d",
   "solver": "openfoam",
   "revalidation_2026_06_07": {
-    "host": "rserver — sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
+    "environment": "sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
     "oracle_score": 1.0,
     "anti_cheat": "openfoam artifact detector active (polyMesh + time dir), solver_evidence=True",
     "note": "All KPIs score 1.0 on the declared image — GT holds on OpenFOAM ESI v2412 post domain-migration."

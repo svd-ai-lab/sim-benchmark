@@ -1,7 +1,7 @@
 """LTspice solver-stage detector.
 
-Survey conclusion (RFC sim-proj#125 phase 3c): the universal stages
-(``L2_solver_crash`` / ``L3_convergence`` / ``L5_*`` / ``L6_pass``) cover
+The universal stages (``L2_solver_crash`` / ``L3_convergence`` / ``L5_*`` /
+``L6_pass``) cover
 LTspice's failure space semantically. There is no domain-specific
 stage worth adding — DC operating-point failure rolls into L2; trapezoidal
 timestep collapse rolls into L3. Hence ``STAGES = ()``.

@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/a123-pulse-resistance-1p8a-soc0p51"
 description = "pulse resistance measurement of the Prada2013 cell, scored from an evaluator-reproduced pulse simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "pulse"]
 
 [environment]

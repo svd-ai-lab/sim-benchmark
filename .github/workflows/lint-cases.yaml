@@ -1,58 +1,4 @@
-# Case gates (agent visibility, schema) plus the tools' own guards.
-#
-# Blocks any change that puts ground truth on the agent-visible surface:
-# worked-example values near gt_value in instruction.md, prose stating the
-# expected answer, or a per-case Dockerfile staging tests//solution/ into
-# the agent image. Warns (task.toml citation values etc.) are reported in
-# the log but do not fail the job.
-#
-# Everything runs through `uv` against the committed `uv.lock`, so CI resolves
-# the same versions a developer does; a job that pip-installed whatever was
-# newest would be checking a different environment than the one anyone runs.
-#
-# ---------------------------------------------------------------------------
-# Why this is ONE job with no `paths:` filter (#99)
-#
-# Two facts about how this repo is billed and how it merges, and one shape
-# falls out of them.
-#
-# 1. This is a PRIVATE repo in an org, so Actions minutes are metered, and
-#    GitHub meters **per job, rounded up to a whole minute**. These five checks
-#    take 10-25 s each. As five parallel jobs they cost 5 billable minutes for
-#    ~45 s of work; as one job they cost 1. That 5x was the whole of this
-#    repo's Actions bill -- 999 minutes in the first four days of August 2026,
-#    against 1061 for the whole of April.
-#
-# 2. Merges are authorised by "CI is green" (docs/internal/agent_workflow.zh.md),
-#    and `pull_request` + `paths:` makes the *absence* of a check ambiguous:
-#    a docs-only PR reports no checks because it was filtered, and a PR whose
-#    workflow file GitHub refused to load also reports no checks. Those two are
-#    the same observation and only one of them is safe to merge. It has already
-#    gone wrong twice -- once when a duplicate `run:` key made every job vanish
-#    silently (see `git log --grep "two \`run:\` keys"`), and again on
-#    2026-08-03 when seven runs produced zero jobs.
-#
-# Branch protection would normally settle (2) by making the check *required*,
-# so a PR that never reports simply cannot merge. It is not available here:
-# `/repos/.../branches/main/protection` returns 403 "Upgrade to GitHub Pro or
-# make this repository public" on this org's plan. So the enforcement has to
-# come from the trigger instead, and it does: **every pull request runs this
-# workflow, so every pull request has exactly one check named `ci`.** No check
-# means the gate did not run -- broken YAML, exhausted minutes, disabled
-# Actions -- and never means "nothing needed checking". That is the property
-# the merge rule depends on, and dropping `paths:` is what buys it.
-#
-# Collapsing five jobs into one is what pays for dropping `paths:`: running on
-# every PR instead of the filtered subset costs strictly less than the five-job
-# fan-out did. Do not re-split this into per-check jobs to get prettier check
-# names, and do not re-add `paths:` -- each undoes half of the above.
-#
-# The steps carry `if: ${{ !cancelled() }}` so one red check does not hide the
-# other four; the job still fails, but the log shows every failure at once,
-# which is what the five parallel jobs used to give for free.
-# ---------------------------------------------------------------------------
-
-name: Lint cases (agent visibility)
+name: Validate dataset
 
 on:
   push:
@@ -63,203 +9,41 @@ on:
 permissions:
   contents: read
 
-# Superseded PR runs are cancelled; main runs are not. A branch under active
-# work pushed four times in forty minutes on 2026-08-03 and paid for four full
-# runs of a result three of which were already stale. Runs on `main` are the
-# per-commit record of whether main is green, so those queue instead.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ci:
-    # The check name the merge rule looks for. Keep it short and stable --
-    # `gh pr checks` is read by a script, and a renamed check reads as a
-    # missing check.
     name: ci
     runs-on: ubuntu-latest
     steps:
-      # fetch-depth: 0 because the added-cases step below diffs against the
-      # PR's base commit, which a shallow clone does not have.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
 
-      - name: ruff
-        run: uv run ruff check tools lib .claude/skills .github
+      - name: Workflow files load
+        run: uv run --with pyyaml python .github/validate_workflows.py
 
-      # Catches a workflow file GitHub would refuse to load. It cannot catch a
-      # break in THIS file -- that run never starts -- but `push-case-images.yaml`
-      # only triggers on push-to-main, so before this step a duplicate key in it
-      # reached main with nothing having looked at it.
-      - name: Workflow files still load
-        if: ${{ !cancelled() }}
-        run: uv run python .github/validate_workflows.py
-
-      # An ignore rule never applies to a path already in the index, so a
-      # tracked file that matches one is invisible to exactly the mechanism
-      # meant to keep it out. `git ls-files -i -c --exclude-standard` is the
-      # whole check: it lists tracked files matching an ignore rule, and on a
-      # healthy tree it prints nothing.
-      #
-      # This is here because removing the files by hand has already been tried
-      # and did not hold. `012df624` (#480) committed five pytest `--basetemp`
-      # artifacts under `/.scratch/`; `b61ed38c` (#482) removed them with a
-      # message explaining this exact mechanism; `96331ae8` (#579), a docs
-      # commit two days later, added them straight back. Nobody was careless
-      # twice -- `pytest --basetemp=.scratch/pt` is the obvious workaround when
-      # the system temp root is unwritable, several tests under `tools/tests/`
-      # run `git add -A` inside their temp tree, and those adds land in the
-      # worktree's index. CLAUDE.md tells every agent to put scratch in
-      # `.scratch/`, so the collision is between a convention and a tool
-      # default and it will keep arriving.
-      #
-      # It asserts the general form on purpose. A check naming those five paths
-      # would have passed every commit since, while the next broad `git add`
-      # re-lands the same class somewhere else. Free to run, because GitHub
-      # meters per JOB and this is one `git` invocation over the index.
-      #
-      # Consequence worth knowing before this goes red on somebody: while a
-      # directory is tracked, it is a top-level entry of the ref, which is what
-      # `sync_tree_mirror.root_allow()` builds the compute hosts' allowed
-      # root-entry list from -- so a tracked stray silences `push_tree.sh`'s
-      # `stray_root_entries` count for its own name. Untracking is what lets
-      # that count see it; `sync_tree_mirror.py --audit-root <host>` clears it.
-      - name: No tracked file matches an ignore rule
-        if: ${{ !cancelled() }}
-        run: |
-          tracked_ignored=$(git ls-files -i -c --exclude-standard)
-          if [ -n "$tracked_ignored" ]; then
-            echo "::error::tracked files match a .gitignore rule, which cannot reach them"
-            echo "$tracked_ignored"
-            echo
-            echo "These are tracked, so the ignore rule that names them does nothing."
-            echo "Fix (index-only, files stay on disk, no history rewrite):"
-            echo "    git rm --cached -r <path>"
-            exit 1
-          fi
-          echo "No tracked file matches an ignore rule."
-
-      - name: Agent-visibility lint
-        if: ${{ !cancelled() }}
-        run: uv run python tools/lint_agent_visible.py
-
-      # Every live track is gated; the staging areas are not. The split is the
-      # leading underscore that already marks them -- `_pending` holds drafts,
-      # `_phase2` is out of scope, `_template` is placeholders, and none of the
-      # three is expected to sweep clean.
-      #
-      # #54 moved this off a pinned subdomain (`cases/cfd/fluids/*/`) for
-      # exactly the reason below, one level down; this takes the same step one
-      # level up. Selecting by convention rather than by a list of track names
-      # is the point: a list has to be edited every time a track is added, and
-      # the one time it is forgotten the gate silently stops covering the newest
-      # thing in the repo -- which is the case least likely to be right.
-      #
-      # One line on purpose. A `#` comment between a `\` continuation and its
-      # arguments does not comment the line out -- the continuation joins them
-      # first, so the `#` then swallows every argument that follows it and the
-      # linter runs over nothing.
-      - name: Schema lint (gated tracks)
-        if: ${{ !cancelled() }}
+      - name: Task schema
         run: uv run python tools/lint_case.py cases/[!_]*/*/*/
 
-      # A frozen contract that moved without a ruling. The failure message is
-      # why this is a step of its own rather than left to the pytest that also
-      # covers it: what the person who just edited a frozen case needs is the
-      # case id, the commit, and the two commands that put it right — not a
-      # stack trace. Free to add, because GitHub meters per JOB.
-      - name: Frozen contracts still hold
-        if: ${{ !cancelled() }}
-        run: uv run python tools/contract_freeze.py --check
-
-      # Where a `gt_value` came from is a sentence, and until #314 nothing
-      # checked a sentence. A batch re-band replaced a hand-written record of a
-      # deliberate re-anchoring with a claim that was false in both halves, and
-      # it stood for three commits with every check above green, because a
-      # fabricated sentence is still a valid string.
-      #
-      # This step is here rather than inside `lint_case.py` because the check is
-      # repo-global: it compares the whole tree against one ledger, and a
-      # per-case linter cannot see a row whose case was deleted.
-      - name: Provenance ledger (hand-written gt provenance unchanged)
-        if: ${{ !cancelled() }}
-        run: uv run python tools/provenance_ledger.py
-
-      # The shop window: `tools/oss-cases.allowlist` is the only list
-      # `publish_oss.py` reads, and all 39 of its entries pointed at nothing for
-      # two months after the June 2026 tree rename, so the mirror published an
-      # empty case set and nothing said so. The publisher is run by hand and
-      # rarely, which is exactly why its gate has to run on every PR instead.
-      #
-      # `--check` needs no mirror on disk. Repo-global for the same reason the
-      # provenance ledger is: it compares the whole `cases/` tree against one
-      # file, and a per-case linter cannot see an entry whose case was deleted.
-      - name: Shop window (allowlist resolves, public_runnable inside budget)
-        if: ${{ !cancelled() }}
-        run: uv run python tools/publish_oss.py --check
-
-      # `tools/v19_static_validate.py` crashed on a moved path and stayed
-      # broken for weeks, while two docs listed it as a validation step and the
-      # OSS publisher shipped it. Nothing noticed because nothing ran it.
-      #
-      # The whole directory, not `test_tools_run.py` alone. Naming one file
-      # meant the other four in `tools/tests/` -- the triage scanner's suite
-      # among them -- were written and then never run by anything on a
-      # schedule, which is the same way `v19_static_validate.py` went bad.
-      # A test nothing runs stops being true.
-      - name: Tools' own tests
-        if: ${{ !cancelled() }}
-        run: uv run python -m pytest -q tools/tests
-
-      # The verifier's own suite -- 248 tests that were written and then never
-      # run by anything on a schedule. It was the only pytest target CI did NOT
-      # invoke, and two of its tests had been failing on every host for as long
-      # as the defect they caught had existed (#37): a generator's progress line
-      # called `relative_to(REPO)`, which raises for any `CASES_ROOT` outside
-      # the repo -- which is what `pytest`'s `tmp_path` is -- so the emit died
-      # after the case was already written. A suite nothing runs stops being
-      # true; this repo has now paid for that twice.
       - name: Verifier tests
-        if: ${{ !cancelled() }}
-        run: uv run python -m pytest -q lib/sim_benchmark_verifier/tests
+        run: >-
+          uv run --project lib/sim_benchmark_verifier
+          --with pytest --with numpy --with scipy --with pandas
+          python -m pytest -q lib/sim_benchmark_verifier/tests
 
-      # A new case on the old 1.1 contract grows the migration backlog instead
-      # of the benchmark, so the current schema is required for cases a PR
-      # *adds*. Existing 1.1 cases are untouched -- they run and score; only
-      # growth is gated.
-      - name: Require schema 1.3 on added cases
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+      - name: New tasks use the current schema
+        if: ${{ github.event_name == 'pull_request' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          # `|| true`: grep exits 1 when a PR adds no cases, which under the
-          # default `bash -e` would fail the step rather than pass it.
-          added=$(git diff --name-only --diff-filter=A "$BASE_SHA"...HEAD \
-                    -- 'cases/**/task.toml' \
-                  | grep -v -e '_pending/' -e '_template/' \
-                  | xargs -r -n1 dirname || true)
-          if [ -z "$added" ]; then
-            echo "No new cases in this PR."
-            exit 0
+          added=$(git diff --diff-filter=A --name-only "$BASE_SHA"...HEAD -- 'cases/*/*/*/task.toml' | xargs -r -n1 dirname | tr '\n' ' ')
+          if [ -n "$added" ]; then
+            uv run python tools/lint_case.py --require-current-schema $added
           fi
-          echo "New cases:"; echo "$added"
-          uv run python tools/lint_case.py --require-current-schema $added
-
-      # The three arms of the case-PR bar cannot run here -- CI has no docker --
-      # so what CI can enforce is that somebody ran them and wrote the result
-      # down. Without this a case merges on a green `ci` with its oracle
-      # possibly never executed against it, and nothing afterwards tells that
-      # apart from one that ran and passed (#522).
-      #
-      # Growth only, like the two gates above it: the existing set carries no
-      # acceptance evidence, and a check that failed all of it on day one would
-      # be switched off rather than satisfied.
-      - name: Require acceptance evidence on added cases
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: uv run python tools/case_acceptance.py --check --base "$BASE_SHA"

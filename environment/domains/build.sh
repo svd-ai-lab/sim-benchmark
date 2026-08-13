@@ -11,8 +11,6 @@
 #   --intl                 use international mirrors (npmjs/pypi.org, no gh-proxy)
 #   --apt-mirror <url>     apt mirror, BUILD-TIME ONLY (restored before the layer ends)
 #   --pip-index <url>      PyPI index (default: the Dockerfile's ARG)
-#   --sim-cli-ref <ref>    pin sim-cli-core to a git ref/sha
-#   --sim-skills-ref <ref> pin sim-skills to a git ref/sha
 #   --registry <reg>       BASE_REGISTRY for the FROM line (default docker.io)
 #   --no-cache             docker build --no-cache
 #
@@ -21,9 +19,9 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${HERE}/../.." && pwd)"
-KNOWN=(eda-digital eda-digital-asic eda-analog cfd fem cad robotics-sim combustion battery)
+KNOWN=(cfd combustion battery)
 
-usage() { echo "usage: build.sh <${KNOWN[*]}|all> [--wine] [--intl] [--apt-mirror URL] [--pip-index URL] [--sim-cli-ref R] [--sim-skills-ref R] [--registry REG] [--no-cache]"; exit 1; }
+usage() { echo "usage: build.sh <${KNOWN[*]}|all> [--intl] [--apt-mirror URL] [--pip-index URL] [--registry REG] [--no-cache]"; exit 1; }
 [ $# -ge 1 ] || usage
 TARGET="$1"; shift
 
@@ -60,32 +58,18 @@ while [ $# -gt 0 ]; do
     --pip-index)      BUILD_ARGS+=(--build-arg "PIP_INDEX_URL=$2" \
                                    --build-arg "PIP_TRUSTED_HOST=$(printf '%s' "$2" | sed -E 's#^https?://##; s#/.*##')")
                       shift 2;;
-    --sim-cli-ref)    BUILD_ARGS+=(--build-arg "SIM_CLI_REF=$2"); shift 2;;
-    --sim-skills-ref) BUILD_ARGS+=(--build-arg "SIM_SKILLS_REF=$2"); shift 2;;
     --registry)       BUILD_ARGS+=(--build-arg "BASE_REGISTRY=$2"); shift 2;;
     --no-cache)       DOCKER_FLAGS+=(--no-cache); shift;;
-    --wine)           WINE=1; shift;;
     *) usage;;
   esac
 done
-WINE="${WINE:-0}"
 
 build_one() {
   local d="$1"
-  # Single domain lives at <name>/Dockerfile; cross-domain combo at
-  # _cross/<name>/Dockerfile. The wine substrate variant is <name>/Dockerfile.wine
-  # (selected by --wine), tagged sim-benchmark-<name>-wine-fullstack.
   local dockerfile tag
-  if [ "${WINE}" = "1" ]; then
-    dockerfile="${HERE}/${d}/Dockerfile.wine"
-    tag="sim-benchmark-${d}-wine-fullstack:latest"
-    [ -f "${dockerfile}" ] || { echo "no wine variant for '${d}' at ${dockerfile}" >&2; exit 2; }
-  else
-    dockerfile="${HERE}/${d}/Dockerfile"
-    [ -f "${dockerfile}" ] || dockerfile="${HERE}/_cross/${d}/Dockerfile"
-    [ -f "${dockerfile}" ] || { echo "no Dockerfile for '${d}' (looked in ${d}/ and _cross/${d}/)" >&2; exit 2; }
-    tag="sim-benchmark-${d}-fullstack:latest"
-  fi
+  dockerfile="${HERE}/${d}/Dockerfile"
+  [ -f "${dockerfile}" ] || { echo "no Dockerfile for '${d}'" >&2; exit 2; }
+  tag="sim-benchmark-${d}-fullstack:latest"
   echo "=== building ${tag} (${dockerfile#${HERE}/}) ==="
   docker build "${DOCKER_FLAGS[@]}" "${BUILD_ARGS[@]}" \
     -f "${dockerfile}" \
@@ -94,10 +78,9 @@ build_one() {
 }
 
 if [ "${TARGET}" = "all" ]; then
-  # "all" builds the single domains only; cross combos are built by name.
   for d in "${KNOWN[@]}"; do build_one "${d}"; done
 else
-  # Accept any single domain (KNOWN) or any cross combo present under _cross/.
+  [[ " ${KNOWN[*]} " == *" ${TARGET} "* ]] || usage
   build_one "${TARGET}"
 fi
 echo "=== done ==="

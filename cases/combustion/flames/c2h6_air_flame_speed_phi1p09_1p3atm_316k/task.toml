@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/c2h6-air-flame-speed-phi1p09-1p3atm-316k"
 description = "ethane laminar flame speed under two transport closures at phi=1.09, 1.3 atm, scored on the ratio between them from two evaluator-reproduced freely-propagating flame solutions."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "ethane", "transport-model-sensitivity"]
 
 [environment]

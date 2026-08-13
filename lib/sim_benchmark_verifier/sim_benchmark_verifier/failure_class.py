@@ -181,7 +181,7 @@ def annotate_per_kpi(
     entry. Return a small summary dict with both-axis distributions.
 
     Routes solver-stage classification through the ``detectors/`` plugin
-    layer (RFC sim-proj#125 phase 3a). The trial-context arguments —
+    layer. The trial-context arguments —
     ``sim_records`` (from ``meta_detail.records``), ``case_dir`` (the
     agent's workspace), ``solver_label`` (from
     ``task.toml.metadata.sim.solver``) — are bundled into a

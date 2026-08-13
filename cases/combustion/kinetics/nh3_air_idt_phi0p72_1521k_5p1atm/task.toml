@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/nh3-air-idt-phi0p72-1521k-5p1atm"
 description = "ammonia ignition delay at phi=0.72, 1521 K, 5.1 atm, scored from an evaluator-reproduced constant-volume reactor history."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "ammonia", "ignition-delay"]
 
 [environment]

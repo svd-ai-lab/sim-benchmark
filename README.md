@@ -6,224 +6,126 @@
 
 <p align="center">
   <a href="https://hwe-bench.svdailab.com/"><img src="https://img.shields.io/badge/Leaderboard-hwe--bench.svdailab.com-3b82f6?style=for-the-badge" alt="Leaderboard"></a>
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-2_min-8b5cf6?style=for-the-badge" alt="Quick Start"></a>
+  <a href="https://hub.harborframework.com/datasets/hwe-bench/hwe-bench/latest"><img src="https://img.shields.io/badge/Dataset-Harbor-009688?style=for-the-badge" alt="HWE-bench on Harbor"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-eab308?style=for-the-badge" alt="License"></a>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/runner-Harbor-009688" alt="Harbor">
-  <img src="https://img.shields.io/badge/edition-CAE-blue" alt="Edition">
-</p>
-
-[What this measures](#what-this-measures) · [What is in this repo](#what-is-in-this-repo) · [A task](#what-a-task-looks-like) · [Scoring](#how-scoring-works-in-60-seconds) · [Quick start](#quick-start) · [Layout](#repository-layout)
+[Tasks](#tasks) · [Evaluation](#evaluation) · [Run](#run) · [Documentation](#documentation)
 
 </div>
 
 ---
 
-HWE-bench is SWE-bench for hardware. It measures whether a model can do
-**digital engineering** — get real work done in the software a hardware
-engineer actually sits in front of: design/CAD, modeling/CAE, production/PLM.
-Tasks are taken from engineering practice rather than synthesized from papers.
+HWE-bench evaluates LLM agents on hardware-engineering tasks performed with
+engineering software. The current **HWE-bench-CAE** edition contains 68 tasks
+across combustion, battery and CFD modeling.
 
-The current edition is **HWE-bench-CAE**, the modeling workflow. Hardware
-engineering is wider than modeling, and later editions cover the rest of it.
+## Tasks
 
-## What this measures
+Each task specifies a physical system, operating point, requested engineering
+output and compute budget. The agent must implement and run a reproducible
+workflow that produces the requested result.
 
-Every other engineering-agent benchmark scores *"does the code run / does the
-testbench pass / is the file valid."* HWE-bench scores **whether the number is
-right** — whether the agent picked the right model, resolved the mesh,
-converged the run, and reported a value that lands inside a tolerance band that
-is itself defensible.
+| track | tasks | software | examples |
+|---|---:|---|---|
+| `combustion` | 21 | Cantera | ignition delay, laminar flame speed |
+| `battery` | 34 | PyBaMM | discharge, charge, thermal and degradation behavior |
+| `cfd` | 13 | OpenFOAM | internal flow, external aerodynamics and natural convection |
 
-Three properties define it:
+See [`CASES.md`](CASES.md) for the complete catalog.
 
-- **The task is executable, not passive data.** Each task is a container, a
-  prompt, a reference solution and a verifier, run by
-  [Harbor](https://www.harborframework.com/).
-- **The judge is code.** `tests/test.sh` writes `reward.json` inside the
-  container. The verifier strips the submission's numeric artifacts and re-runs
-  the submission's own entry point, so the number scored can only be one the
-  submission's code produced.
-- **The unit is the engineering task, not the tool.** A task states the
-  physics, the operating point, the quantity to report and the tolerance it
-  must land in — never which program to type. The container ships a working
-  toolchain; how the agent drives it is its business, and the same task can be
-  stood up on a different solver without changing what is asked or how it is
-  graded.
+## Evaluation
 
-**Where the reference comes from.** Ground truth is the reference solution a
-competent practitioner gets with this class of tool at this operating point:
-published cross-code results at the same grid level where they exist, and this
-repo's calibrated oracle where they do not. A band's centre is that reference;
-its floor is how much competent practitioners actually disagree, because
-narrower than that is scoring noise. Experimental data is cited as provenance
-and sanity check — the score does not ask whether the model reproduces reality,
-since coarse-mesh RANS sitting 20% off a wind tunnel is a fact about RANS
-rather than about the agent.
+The verifier copies the submission into a clean directory, removes generated
+numeric output, and reruns the submitted entry point. It then derives the task
+KPIs from the reproduced artifacts.
 
-**Why the answers are not recallable.** Operating points are chosen off the
-published tables — nobody tabulated φ = 1.02 at 1418 K and 1.3 atm — so there is
-nothing to look up and the run has to happen. Where a reference moves smoothly
-with the operating point and stepping off it would only leave an interpolation,
-the KPI is defined *between* two runs instead (a ratio of two closures, a delta
-between two configurations the prompt names), which cannot be produced without
-solving twice.
-
-**Budget is part of the task.** Engineering is finishing under a finite budget,
-so a run that overruns is graded on what it left behind, and that count is
-published beside the mean rather than hidden in it.
-
-## What is in this repo
-
-**The public set is the scored set.** `cases/` holds exactly the tasks the
-published leaderboard is computed over — one representative per physics family,
-on the three tracks the board reports — so a number on
-[hwe-bench.svdailab.com](https://hwe-bench.svdailab.com/) can be reproduced
-against the tasks it was measured on.
-
-| track | what it covers |
-|---|---|
-| `combustion` | 0-D ignition delay, 1-D laminar flames (Cantera) |
-| `battery` | cell models, thermal rise, degradation (PyBaMM) |
-| `cfd` | external aero, internal flow, natural convection (OpenFOAM) |
-
-[`CASES.md`](CASES.md) is the derived catalog — every case, its solver, its KPI
-and its state. It is regenerated by `tools/gen_cases_md.py`, so it never falls
-out of date with the tree the way a hand-kept count does.
-
-**What is not here.** Each track is a *family*: one physics kind parameterised
-into many operating points sharing one evaluator. Only the representative each
-family contributes to the board is published; the rest of the family, and the
-tracks that have not reached the board, stay private. That larger inventory is
-built for post-training — engineering-simulation environments with a
-programmatic, non-hackable reward, parameterisable into as many operating
-points as an RL run needs. If that is what you are building,
-<contact@svdailab.com>.
-
-## What a task looks like
+For each KPI:
 
 ```text
-cases/<track>/<subdomain>/<case-id>/
-├── task.toml               # Harbor schema 1.3 + [metadata.sim]
-├── instruction.md          # the prompt, handed to the agent verbatim
-├── environment/            # OPTIONAL overlay — only if the task needs an extra tool
-├── solution/solve.sh       # the oracle. Required here, optional in Harbor
-└── tests/                  # the verifier: spec.json + test.sh → reward.json
+pass = required_checks_pass
+       and physics_min <= reproduced_value <= physics_max
+       and abs(reproduced_value - reference_value) <= tolerance
 ```
 
-`instruction.md` fixes an **output interface** — a file name, its columns,
-their units and normalisation — the agent's own run writes it, and the verifier
-reads only that plus a check that the solver actually ran. It never reaches
-into the submission's setup: not the mesh, not the discretisation, not a
-boundary-condition keyword. That is what keeps the free choices free, and it is
-what makes one evaluator per track enough for every case in it.
+Required checks depend on the track and include successful clean reproduction,
+the declared initial state, required output artifacts, and solver evidence for
+CFD tasks. KPI bands are binary; diagnostic details are written separately from
+the scalar reward.
 
-The interface is always a CSV, and its columns are the difficulty ladder:
+References and tolerances are recorded in each task's `tests/kpis.json`. See
+[`SCHEMA.md`](SCHEMA.md) for the task contract and [`ORACLE.md`](ORACLE.md) for
+the oracle acceptance checks.
 
-| KPI shape | interface | what the evaluator does |
-|---|---|---|
-| scalar | one row, one column per quantity (`cd`) | read it → tolerance band |
-| time series | `time_s`, then one column per state variable | derive the event (ignition delay, time-to-X) |
-| profile / curve | the normalised pair (`y_over_h`, `u_over_Ubulk`) | interpolate to reference stations → L2 |
-| order of accuracy | `h`, `l2_error`, ≥ 3 rows | fit the slope → compare to the scheme's theoretical order |
+## Run
 
-## How scoring works in 60 seconds
-
-```
-final_score = kpi_score · numerics_ok
-
-kpi_score   = Σ group.weight · group_score        # group weights sum to 1.0
-per-KPI     = source_verified · physics_pass · band_pass
-  source_verified — the value re-extracts from an artifact that exists on disk
-  physics_pass    — the value lies inside [physics_min, physics_max]
-  band_pass       — BINARY: |value − gt_value| ≤ pass_tol → 1, else 0
-```
-
-`band_pass` has no partial credit, deliberately: a computed number that is
-wrong is not less wrong for being wrong by less. Every run is bracketed by two
-free reference points — the reference solution, which scores 1.0 by
-construction, and an empty submission, which has to score below 0.5. The full
-contract, and the one place this chain is stated normatively, is
-[`SCHEMA.md`](SCHEMA.md); the ranking method and the accounting rules that make
-two runs comparable are in [`LEADERBOARD.md`](LEADERBOARD.md).
-
-Scores themselves are not kept in this repo. A leaderboard row is one model, on
-one commit, in one environment — cheap to recompute and stale the moment a
-toolchain moves. The published board lives at
-[hwe-bench.svdailab.com](https://hwe-bench.svdailab.com/).
-
-## Quick start
+Install [Harbor](https://www.harborframework.com/docs/getting-started), then run
+the published dataset:
 
 ```bash
-# 1. install harbor (the runner — same one Terminal-Bench uses)
 uv tool install harbor
-
-# 2. clone
-git clone https://github.com/svd-ai-lab/hwe-bench && cd hwe-bench
-
-# 3. oracle smoke on one combustion case (no LLM, no API key)
-harbor run -p cases/combustion/kinetics -i ch4_air_idt_phi0p55_1633k_9p2atm --agent oracle -y
-
-# 4. oracle smoke on a CFD case (also no LLM; needs the cfd base
-#    image — see REPRODUCING.md for local builds)
-harbor run -p cases/cfd/fluids -i lid_driven_cavity_ghia_re1000 --agent oracle -y
+harbor run -d hwe-bench/hwe-bench -a oracle
 ```
 
-The oracle involves no LLM and no sampling, so the same case on the same image
-gives the same number every time, and that number is 1.000. What matters is
-that **your number matches the one the oracle produces elsewhere** — if it does
-not, the bug is in your environment, not the agent. See [`ORACLE.md`](ORACLE.md).
+Replace `oracle` with a Harbor-supported agent and provide its model and
+credentials to evaluate an LLM. Harbor accepts an omitted dataset tag as
+`latest`; pin a published tag when comparing runs over time.
 
-To run a model instead, swap `--agent oracle` for `--agent claude-code` (or
-your own wrapper). The three reproduction paths (GHCR pull / build from source /
-paranoid) are in [`REPRODUCING.md`](REPRODUCING.md).
+For local development:
+
+```bash
+git clone https://github.com/svd-ai-lab/hwe-bench
+cd hwe-bench
+environment/domains/build.sh combustion --intl
+harbor run -p cases/combustion/kinetics \
+  -i ch4_air_idt_phi0p55_1633k_9p2atm -a oracle
+```
+
+See [`REPRODUCING.md`](REPRODUCING.md) for environment and reproducibility
+details.
 
 ## Repository layout
 
 ```text
 hwe-bench/
-├── cases/<track>/<subdomain>/<case-id>/   # track → physics-class → case
-├── environment/
-│   ├── domains/             # one fullstack image per track (+ VERSIONS.md)
-│   └── _common/             # the harness every domain image bakes in
-├── lib/sim_benchmark_verifier/     # the grader + per-solver detectors (Python)
-├── tools/                   # lint, oracle runners, aggregation, publishing
-├── docs/                    # methodology, architecture, demand records
-├── CASES.md · SCHEMA.md · LEADERBOARD.md · ORACLE.md · REPRODUCING.md
+├── cases/<track>/<subdomain>/<case-id>/
+│   ├── task.toml
+│   ├── instruction.md
+│   ├── solution/
+│   └── tests/
+├── environment/domains/       # battery, combustion and CFD images
+├── lib/sim_benchmark_verifier/ # evaluator implementation
+├── tools/                      # linting, aggregation and maintenance
+└── dataset.toml                # published Harbor dataset manifest
 ```
 
-The package and image identifiers keep the codebase's own name
-(`sim-benchmark-<domain>-fullstack`, `lib/sim_benchmark_verifier`,
-`sim-benchmark/<case>` in `task.toml`). Those are identifiers, not branding: a
-digest already pulled is the reason they do not move.
+`sim-benchmark-*` image names and the `sim_benchmark_verifier` Python package
+name are retained technical identifiers.
+
+## Documentation
+
+- [`CASES.md`](CASES.md) — public task catalog
+- [`SCHEMA.md`](SCHEMA.md) — authoring and scoring contract
+- [`ORACLE.md`](ORACLE.md) — reference-run acceptance
+- [`REPRODUCING.md`](REPRODUCING.md) — published and local execution
+- [`LEADERBOARD.md`](LEADERBOARD.md) — comparison and reporting rules
+- [`docs/architecture.md`](docs/architecture.md) — trial and verifier flow
 
 ## Contributing
 
-Issue-first: a case PR without a linked, approved proposal issue gets closed
-(it keeps the suite from becoming a drive-by case dump). Two common
-contributions:
+A task change must pass the schema linter and verifier tests. A new or changed
+task also needs evidence that:
 
-- **A new case.** Copy a sibling in the same track as a template, then fill
-  `task.toml` + `instruction.md` + `tests/spec.json` + `solution/solve.sh`.
-  Three checks have to pass: the oracle scores exactly 1.0, a deliberately
-  broken run scores below 0.5, and **a numerically correct submission written
-  differently from the oracle also scores exactly 1.0** — that third one is
-  where the defects actually are. The contract is [`SCHEMA.md`](SCHEMA.md).
-- **A model.** Harbor owns the runner, so a new model is a credential set and
-  an agent name, not a harness.
+1. its oracle scores 1.0;
+2. a deliberately invalid submission fails; and
+3. an independently implemented correct submission passes.
 
-Bringing a brand-new solver onto the track follows contract → oracle → runtime;
-see [`.claude/skills/solver-benchmark-blueprint`](.claude/skills/solver-benchmark-blueprint/SKILL.md).
-
-
-## Citing
+## Citation
 
 ```bibtex
 @misc{hwebench2026,
   title  = {HWE-bench: A Hardware-Engineering Agent Benchmark},
-  author = {{svd-ai-lab}},
+  author = {{SVD AI Lab}},
   year   = {2026},
   url    = {https://github.com/svd-ai-lab/hwe-bench}
 }
@@ -231,6 +133,5 @@ see [`.claude/skills/solver-benchmark-blueprint`](.claude/skills/solver-benchmar
 
 ## License
 
-Apache 2.0. See [`LICENSE`](LICENSE). Bundled example assets (meshes, mechanisms,
-parameter sets) remain under their respective upstream licenses; see each case's
-`solution/` directory for source attribution.
+Apache 2.0. See [`LICENSE`](LICENSE). Third-party mechanisms, parameter sets,
+meshes and reference data retain their upstream licenses.

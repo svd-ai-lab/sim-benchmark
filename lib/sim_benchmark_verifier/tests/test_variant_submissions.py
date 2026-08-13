@@ -1756,7 +1756,6 @@ def test_the_discovery_is_reading_the_tracks_that_actually_exist():
     """
     shared = _shared_evaluators()
 
-    assert {"native_cantera", "native_pybamm",
-            "calculix_interface", "openfoam_interface"} <= set(shared)
+    assert {"native_cantera", "native_pybamm", "openfoam_interface"} <= set(shared)
     # And each is genuinely shared, which is what makes one variant enough.
     assert all(len(cases) > 1 for cases in shared.values())

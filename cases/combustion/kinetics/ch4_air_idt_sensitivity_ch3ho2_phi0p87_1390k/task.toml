@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/ch4-air-idt-sensitivity-ch3ho2-phi0p87-1390k"
 description = "converged logarithmic sensitivity of methane/air ignition delay to one named reaction's rate constant, scored from an evaluator-reproduced perturbation study."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "kinetics", "sensitivity", "gri-mech"]
 
 [environment]
@@ -58,7 +58,6 @@ runtime_status    = "oracle_calibrated_local_tolerance_study"
 score_template    = "numerical"
 leakage_risk      = 1
 capability_target = "solve"
-demand_record     = "docs/demand_sources/records/constructed/combustion/demand-combustion-idt-rate-sensitivity-001.yaml"
 source_citation   = "GRI-Mech 3.0 (Smith, Golden, Frenklach et al.), the mechanism distributed with Cantera as gri30.yaml. The mechanism is published; the sensitivity asked for here is not tabulated in it or anywhere else."
 source_url        = "http://combustion.berkeley.edu/gri-mech/version30/text30.html"
 tags              = ["combustion", "cantera", "numeric-kpi", "native-reproduction", "sensitivity", "multi-run-kpi"]

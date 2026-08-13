@@ -22,7 +22,7 @@ Evidence taxonomy:
     Tertiary  — ``*.log`` / ``*.txt`` containing the canonical Simulink
                 banner (``Simulink``, ``MATLAB``, ``sim('...')``,
                 ``Simulink.SimulationOutput``) in the first ~32 KB.
-    Quaternary — sim-cli ``.sim/runs/<run_id>/`` record (if a future
+    Quaternary — legacy ``.sim/runs/<run_id>/`` record (if a future
                 ``simulink`` driver lands).
 
 Stage emitted:
@@ -92,7 +92,7 @@ def _scan_for_artifacts(case_dir: Path) -> dict:
         mat_files       — list of *.mat paths with size > _MAT_MIN_BYTES
         simulink_logs   — list of log/txt paths whose head matches
                           Simulink banner regex
-        sim_run_dirs    — list of .sim/runs/<run_id> dirs (sim-cli)
+        sim_run_dirs    — list of legacy .sim/runs/<run_id> dirs
     """
     if case_dir is None or not case_dir.is_dir():
         return {
@@ -137,7 +137,7 @@ def _scan_for_artifacts(case_dir: Path) -> dict:
             if _SIMULINK_BANNER_RE.search(head):
                 simulink_logs.append(p)
 
-    # Quaternary — sim-cli .sim/runs/<run_id>/ dirs.
+    # Quaternary — legacy .sim/runs/<run_id>/ dirs.
     sim_run_dirs: list[Path] = []
     runs_root = case_dir / ".sim" / "runs"
     if runs_root.is_dir():

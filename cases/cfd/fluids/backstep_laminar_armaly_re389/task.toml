@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/backstep-laminar-armaly-re389"
 description = "2D laminar backward-facing step (Armaly, Durst, Pereira & Schoenung 1983, J. Fluid Mech. 127:473). Expansion ratio 1.94, Re=389 (based on 2x step height and mean inlet velocity), steady laminar regime. Primary recirculation reattachment length xr/h on the bottom wall vs the canonical Armaly experimental/CFD validation quantity."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "laminar", "backstep", "separation", "reattachment", "armaly", "2d", "vv", "openfoam"]
 
 [environment]
@@ -53,5 +53,4 @@ runtime_status    = "oracle_calibrated_local_v2_reproduction"
 score_template    = "numerical"
 leakage_risk      = 2
 capability_target = "physics"
-demand_record     = "docs/demand_sources/records/paper/cfd/demand-cfd-backstep-laminar-armaly-re389-paper-001.yaml"
 tags              = ["native-openfoam", "field-derived-kpi", "separation", "reattachment", "wall-bounded", "laminar"]

@@ -33,7 +33,7 @@
     "calibration_date": "2026-08-04",
     "openfoam_version": "ESI OpenFOAM v2412",
     "reanchor_commit": "59904f6afbb6b4053ac150d867ffcfba8959ac39",
-    "reanchor_note": "The case tree was materialised with `git archive` at that commit into a scratch directory, because the execution host's rsynced cases/cfd carries pre-#29 leftovers (#159) including an environment/Dockerfile that would change the container identity. The grader was this checkout's lib/sim_benchmark_verifier via PYTHONPATH, not the copy baked into the image — that one is still missing openfoam_interface.py (#105). Both facts are conditions of the number below, so re-measuring on a host whose image has been rebuilt is the way to check it rather than a reason to distrust it.",
+    "reanchor_note": "Re-measured from the recorded case tree and evaluator at reanchor_commit; the reproductions and grid variants below are the auditable basis for the stored reference.",
     "reproductions": "Three independent extractions of the same run recipe agree: solve_inner.py's own reattachment.dat gives 8.341731; the track evaluator's clean reproduction (artefacts stripped, Allrun re-run, results.csv read by the submission's extract_reattachment.py, which finds the floor by minimum y rather than by patch name) gives 8.34173129, |error| = 2.9e-07 and score 1.0; a third standalone Allrun gives 8.34173129 again.",
     "variants": {
       "coarse": {

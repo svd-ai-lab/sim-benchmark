@@ -1,90 +1,78 @@
-# Reproducing a run
+# Reproducing HWE-bench runs
 
-Three paths, in order of increasing cost. All three assume Docker and
-Python 3.12+.
+A reproducible run records the dataset/task version, domain image contents,
+agent, model, inference settings and resource budget.
 
-Start with the oracle, not with a model. It is deterministic, needs no API
-key, and tells you whether your environment is sane before any score means
-anything — see [`ORACLE.md`](ORACLE.md).
+## Published dataset
 
-## Path A — pull the prebuilt image from GHCR (fast)
-
-**Only a case that ships an `environment/Dockerfile` has a prebuilt image**, and
-most do not: a case names a domain image and usually uses it unmodified, so its
-`environment/` holds the fixtures the runner uploads rather than a build
-context. For those cases there is nothing to pull and Path B is the only path.
-No case in the live tracks ships an overlay today, so Path A is currently empty;
-it stays documented because the moment one does, this is how you get it.
-
-Where an image does exist it is published at
-`ghcr.io/svd-ai-lab/sim-benchmark/<domain>-<subdomain>-<case-id>` — the case path
-with `/` replaced by `-` — under two tags: `latest`, and `env-<digest>`, which
-changes exactly when that case's `environment/` changes and therefore names one
-immutable build. That package namespace is the project's old name and is staying
-put: an image path is an identifier, and moving it would only invalidate every
-digest already pulled.
-
-The published set is reconciled against the repository, not accumulated: on each
-push and once a week, `.github/workflows/push-case-images.yaml` asks the registry
-which required images are absent, builds those, and then fails the run if any is
-still missing afterwards. "The image for this case never got pushed" is a red run
-rather than a stale pull three weeks later.
+Install [Harbor](https://www.harborframework.com/docs/getting-started) and run
+the published dataset:
 
 ```bash
 uv tool install harbor
-git clone https://github.com/svd-ai-lab/hwe-bench && cd hwe-bench
-
-# If the GHCR package is still private, authenticate once:
-# echo $GITHUB_TOKEN | docker login ghcr.io -u <username> --password-stdin
-
-# --ek docker_image=... tells Harbor to pull prebuilt instead of building.
-harbor run -p cases/<domain>/<subdomain>/<case-id> \
-    --agent oracle \
-    --ek docker_image=ghcr.io/svd-ai-lab/sim-benchmark/<domain>-<subdomain>-<case-id>:latest
+harbor run -d hwe-bench/hwe-bench -a oracle
 ```
 
-## Path B — build from source (from-scratch verification)
+Omitting a dataset tag selects `latest`. Use an explicit published tag when a
+result must remain comparable over time. See
+[HWE-bench on Harbor Hub](https://hub.harborframework.com/datasets/hwe-bench/hwe-bench/latest).
+
+To evaluate a model, replace `oracle` with a Harbor-supported agent and supply
+the model and credentials required by that adapter.
+
+## Local checkout
+
+The repository contains task definitions and the Dockerfiles for the three
+domain images. Build the domain you need from the repository root:
 
 ```bash
-# (CN dev hosts only — see the registry-override section below)
-docker pull docker.1panel.live/opencfd/openfoam-default:2412
-docker tag  docker.1panel.live/opencfd/openfoam-default:2412 opencfd/openfoam-default:2412
-
-harbor run -p cases/cfd/fluids/lid_driven_cavity_ghia_re100 --agent oracle
+git clone https://github.com/svd-ai-lab/hwe-bench
+cd hwe-bench
+environment/domains/build.sh combustion --intl
+environment/domains/build.sh battery --intl
+environment/domains/build.sh cfd --intl
 ```
 
-Path A and Path B produce equivalent runs because every layer input is
-pinned. Differences confined to the floating-point tail are expected and
-absorbed by the KPI tolerance band.
-
-A case names its environment; it never installs a runtime of its own. What
-version of which solver a domain image ships is recorded in
-[`environment/domains/VERSIONS.md`](environment/domains/VERSIONS.md), and the
-reproducibility coordinate is the git commit — `environment/` and `cases/`
-move together.
-
-## Path C — run a real LLM agent
+Then run a local task or subdomain:
 
 ```bash
-export OPENAI_API_KEY=sk-...        # any OpenAI-compatible endpoint
-
-harbor run -c configs/<run-config>.yaml
+harbor run -p cases/battery/cells \
+  -i a123_lfp_discharge_1p15c_298k -a oracle
 ```
 
-Run configs live flat under `configs/`; each documents its own endpoint and
-key rotation at the top of the YAML. Aggregate the resulting job directories
-with `python tools/aggregate_leaderboard.py <dirs>` — the accounting rules
-that make two runs comparable are in [`LEADERBOARD.md`](LEADERBOARD.md).
+Use the local path for development. Use the published dataset for a clean
+consumer-side check of what Harbor Hub serves.
 
-## Regional mirrors / registry overrides
+## Environment identity
 
-Our `docker-compose.yaml` defaults to `docker.1panel.live` (a CN mirror of
-Docker Hub). Outside CN, override to `docker.io`:
+Tasks currently reference local image tags named
+`sim-benchmark-<track>-fullstack:latest`. These are retained technical
+identifiers. The tag alone is not a reproducibility pin: record the repository
+commit and image digest with a run.
 
-```bash
-# Edit cases/_template/environment/docker-compose.yaml (and any case's
-# environment/docker-compose.yaml) to set:
-#     BASE_REGISTRY: docker.io
-# Or pass it per-run:
-harbor run --ek build.args.BASE_REGISTRY=docker.io ...
-```
+The Dockerfiles pin their base images by digest and the track toolchains pin the
+primary solver and Python packages. Current solver versions are recorded in
+[`environment/domains/VERSIONS.md`](environment/domains/VERSIONS.md) and in
+each task's `tests/kpis.json`.
+
+## Results
+
+Harbor writes jobs and trial artifacts locally. Preserve at least:
+
+- the task/dataset version;
+- agent and model configuration;
+- image digest;
+- `reward.json` and `reward_detail.json`;
+- agent and verifier logs; and
+- completion, timeout and infrastructure status.
+
+Do not compare rows produced from different task contracts or evaluator/image
+contents as if they were one benchmark version. See
+[`LEADERBOARD.md`](LEADERBOARD.md) for reporting rules.
+
+## Regional mirrors
+
+`environment/domains/build.sh --intl` selects Docker Hub, PyPI and npm sources
+suitable for international build hosts. Without `--intl`, the Dockerfiles use
+the repository's CN-oriented defaults. Mirror selection changes where packages
+are downloaded from, not their pinned versions.

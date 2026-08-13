@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Oracle entry point for backstep_laminar_armaly_re389.
 #
-# Drives OpenFOAM through sim-cli so the run is recorded structurally
-# the same way an agent's run would be. The Python orchestrator runs
-# blockMesh + simpleFoam (laminar) + post-processing, then writes
-# /tmp/agent/result.json with file_extract provenance.
+# The Python orchestrator runs blockMesh, simpleFoam and post-processing, then
+# writes the task's submission artifacts.
 set -euo pipefail
 
 HERE="$(dirname "$(realpath "$0")")"

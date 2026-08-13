@@ -8,7 +8,7 @@ artifacts = ["/tmp/agent/submission"]
 # factor (#199), and re-keying the benchmark to spell that would orphan both.
 name        = "hwe-bench/plane-poiseuille-friction-factor"
 description = "Spatial accuracy on fully-developed laminar plane-channel (2D Poiseuille) flow. A straight 2D channel of full gap D = 1 and length 30 (nu = 0.01) is driven by a fixed streamwise pressure difference and solved on 60x20, 120x40 and 240x80 grids. KPI: the observed order of accuracy -- the slope of log(L2 error in the bulk-normalised velocity profile at x = 20) against log(h). The order is a relation between runs, so it cannot be recalled from the closed-form parabola the prompt has to state, and it cannot be produced without solving every refinement level. f*Re = 96 is retained as a weight-0 diagnostic: it is what the stored trials before #199 were scored against."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "laminar", "poiseuille", "plane-channel", "grid-convergence", "order-of-accuracy", "navier-stokes", "2d", "openfoam", "vv"]
 
 [environment]
@@ -61,5 +61,4 @@ leakage_risk      = 1
 capability_target = "numerical"
 source_citation   = "F. M. White, 'Viscous Fluid Flow,' 3rd ed., McGraw-Hill, 2006 (fully-developed laminar duct flow between parallel plates: u(y) = (3/2)*u_mean*(1 - (2y/D)^2), the exact profile the discretisation error is measured against). Corroborated by R. K. Shah and A. L. London, 'Laminar Flow Forced Convection in Ducts,' Academic Press, 1978. The scored quantity is not a value from either source but the order at which a discretisation converges to that exact profile; the theoretical order of a second-order spatial scheme is 2."
 source_url        = "https://www.google.com/books/edition/Viscous_Fluid_Flow/_8FQAAAAMAAJ"
-demand_record     = "docs/demand_sources/records/paper/cfd/demand-cfd-plane-poiseuille-friction-factor-paper-001.yaml"
 tags              = ["native-openfoam", "laminar", "poiseuille", "output-interface", "relation-kpi", "grid-convergence"]

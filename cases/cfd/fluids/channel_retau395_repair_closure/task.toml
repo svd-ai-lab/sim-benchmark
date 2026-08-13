@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/channel-retau395-repair-closure"
 description = "A runnable Re_tau=395 channel case is handed over with a laminar closure; diagnose why the bulk velocity is an order of magnitude high and repair it. KPI = Ub/u_tau vs Moser-Kim-Mansour 1999 DNS."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "rans", "turbulent", "channel-flow", "repair", "diagnosis", "openfoam", "dns-reference"]
 
 [environment]

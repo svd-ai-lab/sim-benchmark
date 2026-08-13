@@ -5,10 +5,7 @@ Run it before pushing any change under `.github/workflows/`:
     uv run python .github/validate_workflows.py
 
 Why this exists, and why it is not in `tools/`: it guards the layer that runs
-everything else, so it has to be runnable when that layer is *not* running --
-after a bad edit, or when the org's Actions minutes are gone. Keeping it next
-to the files it checks is what makes that obvious to whoever is holding the
-broken workflow.
+everything else. Keeping it next to the files it checks makes its scope clear.
 
 The failure it is built for is real and has happened twice. A step with two
 `run:` keys made GitHub reject the entire file; every job disappeared, the runs
@@ -19,11 +16,8 @@ the last one -- so the file parsed fine for anyone who checked it with
 `yaml.safe_load`. The loader below raises instead, which is the whole point;
 the structural checks after it are a cheap bonus.
 
-What this does NOT cover: if `lint-cases.yaml` itself is broken, its own job
-never starts, so this never runs in CI. That case is covered from the other
-side -- that workflow runs on every pull request with no `paths:` filter, so a
-PR carrying a broken copy reports no `ci` check at all, and "no `ci` check"
-is defined as do-not-merge (docs/internal/agent_workflow.zh.md).
+If `lint-cases.yaml` itself is invalid, GitHub cannot start this check. Repository
+branch protection must therefore require the workflow's validation job.
 """
 
 from __future__ import annotations

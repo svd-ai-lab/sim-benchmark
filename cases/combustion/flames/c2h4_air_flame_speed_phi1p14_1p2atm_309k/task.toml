@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/c2h4-air-flame-speed-phi1p14-1p2atm-309k"
 description = "ethylene laminar flame speed at phi=1.14, 1.2 atm, scored from an evaluator-reproduced freely-propagating flame solution."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "ethylene", "laminar-flame-speed"]
 
 [environment]

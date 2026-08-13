@@ -5,19 +5,14 @@
 #
 # WHAT THIS INSTALLS (domain-agnostic):
 #   - OS deps (curl/git/python/build-essential/...)
-#   - sim-cli-core            (the uniform runtime + authenticity anchor)
 #   - sim-benchmark-verifier  (the grader library, from pre-COPY'd /opt)
-#   - sim-skills              (solver playbooks)
 #   - Node 20 + claude-code + claude-code-router (the agent harness)
 #   - openai_usage_proxy + ccr-plugins (token-recovery proxy, from /opt)
 #   - the non-root `agent` user (UID 1200) Claude Code requires for
 #     --permission-mode bypassPermissions
 #
 # WHAT THIS DOES NOT DO (domain-specific — lives in tools.sh):
-#   - the domain solver toolchain (Yosys/ngspice/OpenFOAM/FreeCAD/ROS/...)
-#   - any sim-cli plugin (sim-plugin-openfoam etc.) — tools.sh installs the
-#     plugin matching its domain, tolerating absence (benchmark is
-#     launcher-agnostic: agent may invoke the tool natively).
+#   - the Cantera, PyBaMM or OpenFOAM toolchain
 #
 # CONTRACT WITH THE CALLING Dockerfile (must run BEFORE this script):
 #   COPY lib/sim_benchmark_verifier /opt/sim-benchmark-verifier/
@@ -26,8 +21,6 @@
 #   (build context = repo root)
 #
 # TUNABLES (env vars; CN-friendly defaults):
-#   SIM_CLI_REF       git ref for sim-cli-core            (default: main)
-#   SIM_SKILLS_REF    git ref for sim-skills              (default: main)
 #   PIP_INDEX_URL     pip mirror                          (default: TUNA)
 #   NPM_REGISTRY      npm mirror                          (default: npmmirror)
 #   NODE_TARBALL_URL  node 20 tarball                     (default: npmmirror)
@@ -38,8 +31,6 @@
 
 set -euo pipefail
 
-SIM_CLI_REF="${SIM_CLI_REF:-main}"
-SIM_SKILLS_REF="${SIM_SKILLS_REF:-main}"
 PIP_INDEX_URL="${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}"
 PIP_TRUSTED_HOST="${PIP_TRUSTED_HOST:-pypi.tuna.tsinghua.edu.cn}"
 NPM_REGISTRY="${NPM_REGISTRY:-https://registry.npmmirror.com}"
@@ -76,9 +67,6 @@ python3 -m pip install --help 2>/dev/null | grep -q -- '--break-system-packages'
 PIP="python3 -m pip install --no-cache-dir ${PIP_BSP}"
 echo "pip flags: ${PIP_BSP:-<none>}"
 
-echo "=== install_harness: sim-cli-core (ref=${SIM_CLI_REF}) ==="
-${PIP} "sim-cli-core @ git+${GH_PROXY}https://github.com/svd-ai-lab/sim-cli@${SIM_CLI_REF}"
-
 echo "=== install_harness: sim-benchmark-verifier (grader) ==="
 # Pre-COPY'd by the calling Dockerfile. Editable so dev iteration on the
 # verifier doesn't require a registry round-trip.
@@ -87,12 +75,6 @@ if [ -d /opt/sim-benchmark-verifier ]; then
 else
     echo "WARN: /opt/sim-benchmark-verifier not COPY'd — grader missing" >&2
 fi
-
-echo "=== install_harness: sim-skills (ref=${SIM_SKILLS_REF}) ==="
-git clone --depth 1 --branch "${SIM_SKILLS_REF}" \
-    "${GH_PROXY}https://github.com/svd-ai-lab/sim-skills.git" /opt/sim-skills \
-    && rm -rf /opt/sim-skills/.git \
-    || echo "WARN: sim-skills clone failed (ref=${SIM_SKILLS_REF})" >&2
 
 echo "=== install_harness: Node 20 + agent CLIs ==="
 curl -fkSL "${NODE_TARBALL_URL}" | tar -xz -C /usr/local --strip-components=1

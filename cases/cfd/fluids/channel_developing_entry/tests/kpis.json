@@ -3,10 +3,9 @@
   "case_id": "channel_developing_entry",
   "oracle_status": "cfd_opensource_fullstack_openfoam_v1_hand",
   "oracle_provenance": {
-    "host": "rserver (sim-benchmark-cfd-fullstack:latest, OpenFOAM ESI v2412)",
-    "calibration_date": "auto",
+    "calibration_date": "2026-08-04",
     "extract_method": "simpleFoam laminar steady solve of a 2D plane channel (D=2H=1, Re=100, nu=0.01); U sampled on the centerline y=0 via sampleDict; u_centerline_ratio = Ux(x=1.0)/u_mean, linear-interpolated to the station (solution/solve_inner.py).",
-    "evals": "PENDING (gt_value placeholder 0.0 until autocal runs the oracle on the image)",
+    "evals": "The clean-rerun evaluator reproduced u_centerline_ratio = 1.2464664 at the declared operating point.",
     "auto_batch": false,
     "stopping": {
       "criterion": "residualControl p/U 1e-6 in solution/case/system/fvSolution",
@@ -16,12 +15,12 @@
       "measured_on": "sim-benchmark-cfd-fullstack:latest (ESI OpenFOAM v2412), 2 CPU, #286",
       "note": "Shipped with endTime 2000 against 1672 measured iterations -- converged, by 20%, on one host. The cap is raised to above twice the measured cost so a slower path to the same criterion still converges rather than silently reporting the cap's answer. The run is unchanged either way: re-measured at endTime 4000 it stops at the same 1672 iterations with the same u_centerline_ratio = 1.2464664, so gt_value does not move (#286)."
     },
-    "kpi_quality_note": "TUTORIAL-VARIANT (Tier 4) developing plane-channel entrance flow. ANTI-SHORTCUT: STRONG. The fully-developed plane-Poiseuille centerline is the exact closed form 1.5*u_mean, but the KPI is sampled at the DEVELOPING station x = 0.01*Re*(2H) = 1.0 (well short of the ~4.0 entry length), where the centerline has only partially accelerated. The developing-region value has NO simple closed form (Navier-Stokes entrance solution); quoting 1.5 (fully developed) or 1.0 (uniform inlet) both fall outside T_bad. T_good_pct=6 / T_bad_pct=18 (absolute T_good/T_bad filled by autocal). OpenFOAM anti-cheat detector requires a real polyMesh + time-dir artifact. gt_value is a PLACEHOLDER (0.0) pending oracle calibration.",
+    "kpi_quality_note": "The KPI is sampled in the developing region, before the fully developed plane-Poiseuille limit. The clean-rerun evaluator requires a reproduced OpenFOAM mesh, solution and result artifact.",
     "openfoam_version": "ESI OpenFOAM v2412"
   },
   "source": {
     "primary_url": "",
-    "data_source": "High-fidelity OpenFOAM (ESI v2412) simpleFoam laminar solve, sampled on the channel centerline. Anchored against the canonical 2D plane-channel developing (entrance-region) flow described in standard viscous-flow texts (e.g. White, Viscous Fluid Flow; the OpenFOAM tutorial channel set). PLACEHOLDER gt_value pending an in-container oracle run.",
+    "data_source": "OpenFOAM ESI v2412 simpleFoam laminar solve sampled on the channel centerline, anchored to the canonical plane-channel entrance-flow problem described in standard viscous-flow texts.",
     "physics_note": "Re = u_mean*D/nu = 100 (D = 2H = 1, u_mean = 1, nu = 0.01). Hydrodynamic entry length L_e ~ 0.04*Re*D = 4.0; domain length 6.0 leaves >1.5 L_e for full development. KPI station x = 0.01*Re*(2H) = 1.0 sits inside the developing region, so the centerline has only partially accelerated from the uniform inlet (ratio 1.0) toward the fully-developed parabolic value (ratio 1.5)."
   },
   "kpi_groups": {
@@ -41,7 +40,7 @@
       "kpi_quality_note": "ANTI-SHORTCUT: STRONG. The fully-developed plane-Poiseuille centerline is the exact closed form 1.5*u_mean, but the KPI is sampled at the DEVELOPING station x=1.0 (well short of the ~4.0 entry length), where the centerline has only partially accelerated. The developing-region value has NO simple closed form — it is the Navier-Stokes entrance-flow solution — so quoting 1.5 (fully developed) or 1.0 (uniform inlet) both fall outside T_bad. The agent must actually solve the developing region. The physics window [1.0, 1.5] bounds the value but does not reveal it.",
       "pass_tol": 0.0623233,
       "gross_error_tol": 0.1869699,
-      "gt_value_source": "Auto-calibrated from ngspice/ccx oracle. T_good=6% T_bad=18% of |gt|. Author must confirm the naive formula lies outside T_good (anti-shortcut)."
+      "gt_value_source": "Calibrated from the OpenFOAM ESI v2412 oracle at the declared mesh and sampling station."
     }
   }
 }

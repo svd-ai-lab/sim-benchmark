@@ -1,9 +1,8 @@
 """Plugin detector framework for solver-stage classification.
 
-Per RFC sim-proj#125 amendment. Each detector contributes stages from
-its own ``STAGES`` set; the union of all registered detectors' stages
-forms the open ``solver_stage`` enum. Detectors are dispatched in
-registration order; first non-``None`` stage wins.
+Each detector contributes stages from its own ``STAGES`` set; their union forms
+the open ``solver_stage`` enum. Detectors are dispatched in registration order;
+the first non-``None`` stage wins.
 
 Conventions:
 - Solver-specific detectors register **before** ``universal`` so they
@@ -11,11 +10,11 @@ Conventions:
   domain stages). The universal detector is the fallback layer for
   L0 / L2 / L5 / L6.
 - Each detector reads artifacts directly (``log.<solver>``, ``*.cas``,
-  …); it must NOT depend on sim-cli having been called. ``sim_records``
+  …); it must NOT depend on optional legacy run records. ``sim_records``
   is a corroborating signal, not a primary one.
 - Detectors are pure: same input → same output. No LLM judgment in
   this layer (per ccl-evaluator pattern, soft judgment lives in a
-  separate optional skill, sim-proj#125 phase 5).
+  separate optional review layer).
 
 Adding a new solver:
     1. Drop a file in ``detectors/<solver>.py``
@@ -192,7 +191,7 @@ _EVIDENCE_FUNCS = {
 # ``has_solver_evidence`` proves the solver ran at all; this proves a *study*
 # happened: either a design/sample table (a CSV/TSV/DAT of >= n_evals_min
 # numeric rows mapping parameters -> outputs — the natural artifact of a
-# sweep/optimisation) OR >= n_evals_min sim-cli run records. The caller still
+# sweep/optimisation) OR >= n_evals_min legacy run records. The caller still
 # enforces ``has_solver_evidence`` separately, so a faked table with no solver
 # output cannot pass.
 
@@ -227,7 +226,7 @@ def has_study_evidence(
     numeric rows. If the case names no table, fall back to scanning ``.csv`` /
     ``.tsv`` files only (NOT ``.dat`` / ``.txt`` — those are solver output, and
     a single CalculiX ``.dat`` eigenvalue table would otherwise masquerade as a
-    multi-eval sweep). Either way, >= n_evals_min sim-cli run records also
+    multi-eval sweep). Either way, >= n_evals_min legacy run records also
     satisfies it. The caller separately requires ``has_solver_evidence``, so a
     table with no real solver output on disk still fails the overall gate.
     """

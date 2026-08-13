@@ -1,7 +1,7 @@
 """OpenFOAM-specific solver-stage detector.
 
 Reads ``log.<solver>`` files from the agent's workspace directly. Does
-NOT depend on sim-cli having been called — discovery is purely
+NOT depend on any launcher having been called — discovery is purely
 artifact-based (glob for ``log.<known_of_solver>`` under
 ``ctx.case_dir``).
 
@@ -574,7 +574,7 @@ class OpenFOAMDetector:
         if ctx.solver_label == "openfoam":
             return True
         # Sniff: artifact glob found at least one OF log file. Robust
-        # against agent bypasses of sim-cli — purely based on what was
+        # against launcher bypasses — purely based on what was
         # written to disk.
         return _find_of_log(ctx.case_dir) is not None
 

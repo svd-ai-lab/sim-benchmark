@@ -154,7 +154,7 @@ def measure_trial(trial_dir: Path, repo_root: Path | None = None) -> dict:
             "cpu_cores": None,
             "gpu_count": None,
             # Two distinct timings — both kept so consumers can pick:
-            #   solver_wall_seconds = sum of sim-cli run durations (true compute)
+            #   solver_wall_seconds = sum of optional run-history durations
             #   agent_wall_seconds  = total trial wall (mirrors agent.wall_seconds;
             #                          includes LLM thinking + tool latency)
             "solver_wall_seconds": None,

@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/nmc-pouch-energy-2p4c-299k"
 description = "constant-current discharge of the Mohtat2020 cell, scored from an evaluator-reproduced discharge simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "discharge"]
 
 [environment]

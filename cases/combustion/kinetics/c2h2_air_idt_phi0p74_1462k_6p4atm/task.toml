@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/c2h2-air-idt-phi0p74-1462k-6p4atm"
 description = "acetylene ignition delay at phi=0.74, 1462 K, 6.4 atm, scored from an evaluator-reproduced constant-volume reactor history."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "acetylene", "ignition-delay"]
 
 [environment]

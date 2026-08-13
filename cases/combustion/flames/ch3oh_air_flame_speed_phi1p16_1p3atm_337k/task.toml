@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/ch3oh-air-flame-speed-phi1p16-1p3atm-337k"
 description = "methanol laminar flame speed at phi=1.16, 1.3 atm, scored from an evaluator-reproduced freely-propagating flame solution."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "methanol", "laminar-flame-speed"]
 
 [environment]

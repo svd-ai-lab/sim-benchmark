@@ -44,7 +44,7 @@ class Fixture:
     log_filename: str       # how the broken log file is named in case_dir
     text: str               # the (possibly mutated) log content
     expected: str | None    # what solver_stage we expect detector to fire
-    solver_label: str       # ltspice / openfoam — for ctx routing
+    solver_label: str       # detector routing label
 
 
 # ── Broken-variant builders (mutations of a healthy log) ────────────────
@@ -84,16 +84,6 @@ def _of_push_continuity(text: str, target: float) -> str:
     return text[:last.start(2)] + repr(target) + text[last.end(2):]
 
 
-def _ltspice_inject_error(text: str) -> str:
-    """Inject a *** error marker into a healthy LTspice log."""
-    return text.rstrip() + "\n*** Cannot find subcircuit 'opamp_x' ***\n"
-
-
-def _ltspice_inject_convergence(text: str) -> str:
-    """Inject a 'Time step too small' line."""
-    return text.rstrip() + "\n*** Time step too small at time=12.3ms; aborting\n"
-
-
 # ── Fixture builders ────────────────────────────────────────────────────
 
 
@@ -122,27 +112,6 @@ def of_fixtures() -> list[Fixture]:
         Fixture("of/borderline_continuity", "log.simpleFoam",
                 _of_push_continuity(healthy, CONTINUITY_TOLERANCE * 0.5),
                 None, "openfoam"),
-    ]
-
-
-def ltspice_fixtures() -> list[Fixture]:
-    healthy_path = FIXTURE_ROOT / "ltspice" / "healthy.log"
-    healthy_bytes = healthy_path.read_bytes()
-    # Decode UTF-16 (LTspice native) for mutation; re-encode below
-    if healthy_bytes.startswith((b"\xff\xfe", b"\xfe\xff")):
-        healthy = healthy_bytes.decode("utf-16", errors="replace")
-    elif healthy_bytes.count(b"\x00") > max(1, len(healthy_bytes) // 10):
-        healthy = healthy_bytes.decode("utf-16-le", errors="replace")
-    else:
-        healthy = healthy_bytes.decode("utf-8", errors="replace")
-    return [
-        Fixture("ltspice/healthy",     "rc_highpass_ac.log", healthy,
-                None, "ltspice"),
-        Fixture("ltspice/error",       "rc_highpass_ac.log",
-                _ltspice_inject_error(healthy), "L2_solver_crash", "ltspice"),
-        Fixture("ltspice/convergence", "rc_highpass_ac.log",
-                _ltspice_inject_convergence(healthy), "L3_convergence",
-                "ltspice"),
     ]
 
 
@@ -187,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     args.tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    fixtures = of_fixtures() + ltspice_fixtures()
+    fixtures = of_fixtures()
     rows = []
     for fix in fixtures:
         actual, ok = run_fixture(fix, args.tmp_dir)
@@ -286,11 +255,10 @@ def _write_evidence_md(path: Path, rows, metrics) -> None:
         "Fixtures used:",
         "- OpenFOAM healthy log: `lid_driven_cavity_re100` oracle "
         "(simpleFoam, 1639 iter, residual ~1e-9, continuity ~1e-10)",
-        "- LTspice healthy log: `rc_highpass_ac.net` via wine-LTspice 26.0.1",
         "",
         "Broken variants are programmatic mutations of the healthy "
-        "logs (truncate End marker, push residual / continuity past "
-        "tolerance, inject error / convergence markers).",
+        "log (truncate End marker, push residual or continuity past "
+        "tolerance).",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

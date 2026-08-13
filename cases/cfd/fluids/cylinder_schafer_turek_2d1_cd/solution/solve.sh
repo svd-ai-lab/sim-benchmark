@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # Oracle entry point for cylinder_schafer_turek_2d1_cd.
 #
-# Drives OpenFOAM through sim-cli so the run is recorded structurally the same
-# way an agent's run would be. The Python orchestrator runs blockMesh +
-# simpleFoam (laminar) + the forceCoeffs function object, extracts the drag
-# coefficient cd, then writes /tmp/agent/result.json with file_extract
-# provenance. It asserts result.json + polyMesh/ + a non-zero time dir exist.
+# The Python orchestrator runs blockMesh, simpleFoam and the forceCoeffs
+# function object, then extracts the drag coefficient. It asserts that the
+# expected result and OpenFOAM artifacts exist.
 set -euo pipefail
 
 HERE="$(dirname "$(realpath "$0")")"

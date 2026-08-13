@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/ch4-air-idt-resume-interrupted-run"
 description = "A constant-volume methane/air ignition run that was cut off mid-induction. The operating point is nowhere in the prompt -- it exists only in the checkpoint the crashed run left on disk -- so the task is to establish what is on disk, continue from it without losing the rows already computed, and report the finished trace."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "methane", "ignition-delay", "resume", "crash-recovery"]
 
 [environment]
@@ -53,8 +53,7 @@ score_template    = "numerical"
 leakage_risk      = 1
 capability_target = "solve"
 source_citation   = "Production gateway logs of the shipped agent product, one-month window, external accounts only, analysed offline (issue #17 procedure, mining run #258). Interruption of long solver work -- crash, reboot, closed session -- recurs across users and solvers; the user comes back and asks the agent to carry on without redoing the finished part. The chemistry is GRI-Mech 3.0 (Smith, Golden, Frenklach et al.), the mechanism distributed with Cantera as gri30.yaml."
-source_url        = "https://github.com/svd-ai-lab/sim-benchmark-internal/issues/258"
-demand_record     = "docs/demand_sources/records/enterprise/battery/demand-battery-resume-interrupted-run-enterprise-001.yaml"
+source_url        = ""
 tags              = ["combustion", "cantera", "numeric-kpi", "native-reproduction", "resume", "state-establishment"]
 prototype_origin  = "sim-benchmark:cases/combustion/kinetics/ch4_air_idt_phi1p02_1418k_1p3atm"
 prototype_delta   = "Same chemistry, same reactor, same operating point, same gt_value and same band as the sibling named above -- deliberately, because the pair is the experiment: one asks for the value, the other asks for the resume, and only a matched pair can say whether changing the task SHAPE buys discrimination or only inventory (#257 step 4 left that open). What moved is the contract. The operating point is removed from instruction.md and survives only inside the checkpoint the crashed run left on disk, so integrating from t = 0 is not available and reading the disk state is the only route to an answer. The deliverable grows a second, exact requirement -- the rows the interrupted run had completed must come back unaltered -- which the evaluator checks against its own pristine copy. It does NOT require them to be un-recomputed, because that is not observable: a driver that ignores the checkpoint and re-integrates from t = 0 at the same tolerances lands on bit-identical adaptive steps (measured), so an evaluator reading only the output interface cannot distinguish reuse from deterministic recomputation, and a contract clause demanding otherwise would enforce nothing. The starting artefacts are a results.csv whose final line is a partial record (the process died mid-write) and a checkpoint holding the full thermochemical state at the last complete row; nothing on the agent-visible surface says where the run stopped, what mechanism it used or what conditions it was at."

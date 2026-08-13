@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/ndodecane-air-idt-phi0p83-1319k-14p2atm"
 description = "n-dodecane ignition delay at phi=0.83, 1319 K, 14.2 atm, scored from an evaluator-reproduced constant-volume reactor history."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["combustion", "cantera", "chemical-kinetics", "n-dodecane", "ignition-delay"]
 
 [environment]

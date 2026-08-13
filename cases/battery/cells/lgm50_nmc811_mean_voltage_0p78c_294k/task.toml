@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/lgm50-nmc811-mean-voltage-0p78c-294k"
 description = "rate capability of the Chen2020 cell, scored from an evaluator-reproduced rate_capability simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "rate_capability"]
 
 [environment]

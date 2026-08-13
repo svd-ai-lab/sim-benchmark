@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/lgm50-thermal-rise-0p91c-303k"
 description = "discharge with cell heating of the ORegan2022 cell, scored from an evaluator-reproduced thermal simulation."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["battery", "pybamm", "lithium-ion", "electrochemistry", "thermal"]
 
 [environment]

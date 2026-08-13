@@ -4,7 +4,7 @@ artifacts = ["/tmp/agent/submission"]
 [task]
 name        = "hwe-bench/flatplate-zpg-subsonic"
 description = "OpenFOAM low-Mach incompressible SST verification of the TMR 2D zero-pressure-gradient flat plate, Re=5e6 per unit length."
-authors     = [{name = "sim-benchmark"}]
+authors     = [{name = "SVD AI Lab"}]
 keywords    = ["cfd", "rans", "turbulent", "boundary-layer", "2d", "vv", "openfoam"]
 
 [environment]

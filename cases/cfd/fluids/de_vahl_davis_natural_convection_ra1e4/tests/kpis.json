@@ -3,7 +3,7 @@
   "case_id": "de_vahl_davis_natural_convection_ra1e4",
   "oracle_status": "cfd_opensource_fullstack_openfoam_v1_hand",
   "oracle_provenance": {
-    "host": "rserver (sim-benchmark-cfd-fullstack:latest, OpenFOAM ESI v2412)",
+    "environment": "sim-benchmark-cfd-fullstack:latest (OpenFOAM ESI v2412)",
     "openfoam_version": "ESI OpenFOAM v2412",
     "calibration_date": "auto",
     "extract_method": "buoyantBoussinesqSimpleFoam laminar steady Boussinesq solve of a 2D differentially-heated SQUARE cavity (unit side L=1; hot left wall T=1, cold right wall T=0, adiabatic top/bottom; non-dimensional setup nu=8.4261498e-3, Pr=0.71, beta=1, g=1 -> Ra=g*beta*dT*L^3/(nu*alpha)=1e4). wallHeatFlux function object integrates the kinematic heat flow over the hot wall; nu_avg_hot_wall = Q/(alpha*(dT/L)*A) with alpha=nu/Pr, dT=1, L=1, A=0.1 (solution/solve_inner.py).",

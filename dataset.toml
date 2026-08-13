@@ -4,8 +4,8 @@
 
 [dataset]
 name = "hwe-bench/hwe-bench"
-description = "HWE-bench measures how well an LLM does hardware engineering: real work in design/CAD, modeling/CAE and production/PLM software, graded on the number the run reports inside a defensible tolerance band. This release covers CAE."
-keywords = []
+description = "HWE-bench evaluates LLM agents on engineering-simulation tasks. This CAE edition covers combustion, battery and CFD modeling."
+keywords = ["hardware-engineering", "CAE", "combustion", "battery", "CFD"]
 [[dataset.authors]]
 name = "SVD AI Lab"
 email = "contact@svdailab.com"
@@ -282,4 +282,3 @@ digest = "sha256:ac717f7a62b21ff872d1ef43bb98bf33f5f7cc7f2705133c54b612ca655fc1f
 [[tasks]]
 name = "hwe-bench/nhexane-air-idt-phi0p79-1442k-4p6atm"
 digest = "sha256:6c8d6d1c4a196db2f246ed5860d641f95f1fb2be0c30a38e8ee78052aeeb3770"
-

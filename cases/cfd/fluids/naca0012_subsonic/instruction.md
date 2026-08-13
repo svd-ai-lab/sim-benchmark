@@ -81,23 +81,10 @@ Work inside `/tmp/agent/submission/`. Required:
 
 ## Environment
 
-Your working directory holds the supplied mesh and nothing else.
-
-This benchmark is solver-neutral. Discover what is installed at runtime:
-
-```
-sim --json check              # list all installed solvers
-ls $SIM_SKILLS_ROOT           # list solver playbooks
-cat $SIM_SKILLS_ROOT/<solver>/SKILL.md
-```
-
-Pick any installed CFD solver. No restriction on numerical scheme; the
-turbulence model is fixed by the flow conditions above. If `sim` is on PATH,
-driving the solver through it gives
-you the `sim_run_stdout` and `sim_run_kpi` source kinds; if it is not
-installed here, invoke the solver natively and use `file_extract` for every
-KPI. The verifier scores KPI accuracy and source provenance, never which
-launcher you used.
+Your working directory holds the supplied mesh and nothing else. OpenFOAM ESI
+v2412 is installed in the task environment. Invoke its tools directly. The
+numerical scheme is your choice; the turbulence model is fixed by the flow
+conditions above.
 
 ## Analytical-shortcut notice
 
