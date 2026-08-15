@@ -16,7 +16,6 @@ engineering is wider than simulation, and later editions cover the rest of it.*
 
 <p align="center">
   <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-2_min-3b82f6?style=for-the-badge" alt="Quick Start"></a>
-  <a href="#reference-runs"><img src="https://img.shields.io/badge/Reference_runs-Claude_%E2%80%A2_MiniMax-8b5cf6?style=for-the-badge" alt="Reference models"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-eab308?style=for-the-badge" alt="License"></a>
 </p>
 
